@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- LEAFLET CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+
+<style>
+/* =========================================================
+   Live Navigation Map - Customer Design Alignment
+========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+.dashboard-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+    background-color: #f8fafc;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid #2563eb;
+    border-radius: 16px;
+    padding: 24px 32px;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.03);
+}
+
+.header-title h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-title p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+.btn-action-outline {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-action-outline:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.journey-status-pill {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+    padding: 14px 20px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#map {
+    height: 600px;
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+}
+
+@media (max-width: 768px) {
+    #map { height: 440px; }
+}
+</style>
+
+<div class="dashboard-container">
+
+    <!-- Header Box -->
+    <div class="page-header">
+        <div class="header-title">
+            <h1>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                Technician Route Navigation
+            </h1>
+            <p>Real-time turn-by-turn route tracking to customer address.</p>
+        </div>
+
+        <a href="{% url 'technician_my_jobs' %}" class="btn-action-outline">
+            ← Return to Jobs
+        </a>
+    </div>
+
+    <!-- ETA Banner -->
+    <div id="journey-info" class="journey-status-pill">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Calculating live route &amp; ETA...
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>
+
+</div>
+
+<!-- LEAFLET JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+<script>
+const customerLat = parseFloat("{{ service_request.customer_latitude }}") || 22.5726;
+const customerLng = parseFloat("{{ service_request.customer_longitude }}") || 88.3639;
+
+const map = L.map('map', { zoomControl: true }).setView([customerLat, customerLng], 14);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+setTimeout(() => { map.invalidateSize(); }, 800);
+
+const technicianIcon = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
+    iconSize: [40, 40],
+    iconAnchor: [20, 20]
+});
+
+let technicianMarker = null;
+
+const customerIcon = L.icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+
+const customerMarker = L.marker([customerLat, customerLng], {
+    icon: customerIcon,
+    zIndexOffset: 999
+}).addTo(map).bindPopup("🏠 Customer Location");
+
+const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+const trackingSocket = new WebSocket(wsProtocol + window.location.host + '/ws/tracking/{{ service_request.id }}/');
+
+if (!("geolocation" in navigator)) {
+    alert("Geolocation is not available! You must be on HTTPS or localhost to use GPS tracking.");
+} else {
+    navigator.geolocation.watchPosition(
+    function(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        if (trackingSocket.readyState === WebSocket.OPEN) {
+            trackingSocket.send(JSON.stringify({
+                type: 'live_location',
+                request_id: "{{ service_request.id }}",
+                latitude: lat,
+                longitude: lng
+            }));
+        }
+
+        setTimeout(() => {
+            if (!window.mapInitialized) {
+                map.setView([lat, lng], 15);
+                window.mapInitialized = true;
+            }
+            map.invalidateSize();
+        }, 500);
+
+        if (!technicianMarker) {
+            technicianMarker = L.marker([lat, lng], {
+                icon: technicianIcon,
+                zIndexOffset: 1000
+            }).addTo(map).bindPopup("🛵 Technician (You)");
+        } else {
+            technicianMarker.setLatLng([lat, lng]);
+        }
+
+        if (!window.routeControl) {
+            window.routeControl = L.Routing.control({
+                createMarker: function() { return null; },
+                waypoints: [
+                    L.latLng(lat, lng),
+                    L.latLng(customerLat, customerLng)
+                ],
+                routeWhileDragging: false,
+                addWaypoints: false,
+                draggableWaypoints: false,
+                fitSelectedRoutes: true,
+                show: false
+            }).addTo(map);
+
+            window.routeControl.on('routesfound', function(e) {
+                const route = e.routes[0];
+                const distance = (route.summary.totalDistance / 1000).toFixed(2);
+                const time = Math.round(route.summary.totalTime / 60);
+
+                document.getElementById('journey-info').innerHTML =
+                    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${time} mins away • ${distance} km remaining to Customer`;
+            });
+        } else {
+            window.routeControl.setWaypoints([
+                L.latLng(lat, lng),
+                L.latLng(customerLat, customerLng)
+            ]);
+        }
+
+        if (!window.mapCentered) {
+            map.panTo([lat, lng]);
+            window.mapCentered = true;
+        }
+    },
+    function(error) {
+        console.error("❌ GPS ERROR:", error);
+        if (error.code === 1) alert("GPS Error: Permission Denied.");
+        else if (error.code === 2) alert("GPS Error: Position Unavailable (Are you testing on a desktop without GPS?).");
+        else if (error.code === 3) alert("GPS Error: Timeout (Could not get location).");
+        else alert("GPS Error: " + error.message);
+    },
+    { enableHighAccuracy: false, maximumAge: 0, timeout: 20000 }
+);
+}
+</script>
+
+{% endblock %}

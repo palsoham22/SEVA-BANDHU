@@ -1,0 +1,298 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+.account-wrapper {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+    background-color: #f8fafc;
+}
+
+.account-header {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 28px 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.account-header h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px 0;
+}
+
+.account-header p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+.btn-back-link {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-back-link:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 24px;
+}
+
+.card-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.card-box h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 18px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Profile Info styling */
+.profile-info-row {
+    margin-bottom: 16px;
+}
+.profile-info-row label {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+.profile-info-row p {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: #0f172a;
+}
+
+/* Coupon styling */
+.coupon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+.coupon-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+.coupon-card::before, .coupon-card::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.coupon-card::before { left: -10px; border-right-color: transparent; }
+.coupon-card::after { right: -10px; border-left-color: transparent; }
+
+.coupon-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+}
+.coupon-card p {
+    margin: 0 0 16px 0;
+    font-size: 13px;
+    color: #475569;
+}
+.coupon-code-box {
+    background: #eff6ff;
+    border: 1px dashed #93c5fd;
+    color: #1d4ed8;
+    font-family: ui-monospace, monospace;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    letter-spacing: 1px;
+}
+.coupon-status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+.status-used { background: #fee2e2; color: #b91c1c; }
+.status-active { background: #dcfce7; color: #15803d; }
+.redeemed-coupon { opacity: 0.5; }
+
+@media (max-width: 768px) {
+    .layout-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<div class="account-wrapper">
+    <!-- Header -->
+    <div class="account-header">
+        <div>
+            <h1>My Profile & Rewards</h1>
+            <p>Manage your account details and view your exclusive offers.</p>
+        </div>
+        <a href="{% url 'customer_dashboard' %}" class="btn-back-link">
+            ← Dashboard
+        </a>
+    </div>
+
+    <div class="layout-grid">
+        <!-- Left Column (Profile & Referral) -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="card-box">
+                <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Personal Details
+                </h3>
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="width: 80px; height: 80px; background: #2563eb; color: #ffffff; font-size: 32px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; margin-bottom: 12px;">
+                        {{ customer.username|upper|first }}
+                    </div>
+                    <div style="font-size: 12px; background: #dcfce7; color: #15803d; display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: 600;">
+                        Verified Customer
+                    </div>
+                </div>
+
+                <div class="profile-info-row">
+                    <label>Username</label>
+                    <p>{{ customer.username }}</p>
+                </div>
+                <div class="profile-info-row">
+                    <label>Email Address</label>
+                    <p>{{ customer.email }}</p>
+                </div>
+                <div class="profile-info-row">
+                    <label>Contact Number</label>
+                    <p>{{ customer.contact|default:"Not provided" }}</p>
+                </div>
+                <div class="profile-info-row">
+                    <label>Primary Address</label>
+                    <p>{{ customer.address|default:"Not provided" }}</p>
+                </div>
+            </div>
+
+            <!-- Referral Card -->
+            <div class="card-box" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; border: none;">
+                <h3 style="color: white; border-bottom: 1px solid #334155;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Invite Friends, Earn ₹50
+                </h3>
+                <p style="font-size: 13.5px; color: #cbd5e1; margin-bottom: 16px;">Share your unique referral code. You get ₹50 and they get ₹25 on signup!</p>
+                
+                <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-family: monospace; font-size: 18px; font-weight: 700; letter-spacing: 1px; color: #60a5fa;" id="myReferralCode">{{ customer.referral_code|default:"N/A" }}</span>
+                    <button onclick="navigator.clipboard.writeText('{{ customer.referral_code }}'); this.innerText='Copied!';" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px; transition: 0.2s;">Copy</button>
+                </div>
+                
+                <div style="margin-top: 16px; font-size: 13px; color: #94a3b8; display: flex; justify-content: space-between;">
+                    <span>Total Invited: <strong style="color: white;">{{ referrals.count }}</strong></span>
+                    <span>Total Earned: <strong style="color: #4ade80;">₹{{ total_earned }}</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Offers & Rewards -->
+        <div class="card-box">
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                My Offers & Rewards
+            </h3>
+            
+            {% if my_offers or available_global_offers %}
+                <div class="coupon-grid">
+                    {% for cust_offer in my_offers %}
+                        <div class="coupon-card">
+                            {% if cust_offer.redeemed %}
+                                <div class="coupon-status status-used">Redeemed</div>
+                            {% elif cust_offer.is_expired %}
+                                <div class="coupon-status status-used" style="background:#f1f5f9; color:#64748b; border: 1px solid #cbd5e1;">Expired</div>
+                            {% else %}
+                                <div class="coupon-status status-active">Available</div>
+                            {% endif %}
+                            
+                            <h4>{{ cust_offer.offer.title }}</h4>
+                            <p>{{ cust_offer.offer.description }}</p>
+                            <div class="coupon-code-box {% if cust_offer.redeemed or cust_offer.is_expired %}redeemed-coupon{% endif %}">
+                                {{ cust_offer.offer.code }}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <!-- Show general active offers that don't belong strictly to them yet but they could use -->
+                    {% for general_offer in available_global_offers %}
+                        <div class="coupon-card">
+                            <div class="coupon-status status-active">Available</div>
+                            <h4>{{ general_offer.title }}</h4>
+                            <p>{{ general_offer.description }}</p>
+                            <div class="coupon-code-box">
+                                {{ general_offer.code }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 40px 20px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" style="margin-bottom: 12px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                    <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #475569;">No Active Offers</h4>
+                    <p style="margin: 0; font-size: 13.5px; color: #64748b;">Keep an eye out for special promotions and rewards coming soon!</p>
+                </div>
+            {% endif %}
+            
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,31 @@
+{
+    "generated_from":  "SevaBandhu-Frontend/templates",
+    "pages":  [
+                  "index.html",
+                  "templates/base.html",
+                  "templates/home.html",
+                  "templates/customer/create_request.html",
+                  "templates/customer/dashboard_c.html",
+                  "templates/customer/invoice.html",
+                  "templates/customer/loader.html",
+                  "templates/customer/login.html",
+                  "templates/customer/logout.html",
+                  "templates/customer/my_requests.html",
+                  "templates/customer/payment.html",
+                  "templates/customer/phone_verification.html",
+                  "templates/customer/service_selection.html",
+                  "templates/customer/signup.html",
+                  "templates/customer/tracking.html",
+                  "templates/customer/verification_result.html",
+                  "templates/customer/verification_sent.html",
+                  "templates/technician/complete_profile.html",
+                  "templates/technician/dashboard_t.html",
+                  "templates/technician/login.html",
+                  "templates/technician/logout.html",
+                  "templates/technician/my_job.html",
+                  "templates/technician/navigation.html",
+                  "templates/technician/signup.html",
+                  "templates/technician/update_location.html",
+                  "templates/technician/update_status.html"
+              ]
+}

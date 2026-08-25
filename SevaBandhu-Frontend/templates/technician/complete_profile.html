@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Technician Partner Profile | Seva Bandhu</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            padding: 32px 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-container {
+            width: 100%;
+            max-width: 680px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+        }
+
+        .profile-header {
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        .profile-header h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+        }
+
+        .profile-header p {
+            color: #64748b;
+            font-size: 14.5px;
+        }
+
+        .info-step-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 14px;
+            padding: 14px 18px;
+            font-size: 13.5px;
+            color: #1e40af;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .form-group-item {
+            margin-bottom: 20px;
+        }
+
+        .form-group-item label {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .form-group-item input,
+        .form-group-item select,
+        .form-group-item textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            font-size: 14px;
+            font-family: inherit;
+            color: #0f172a;
+            background: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .form-group-item input:focus,
+        .form-group-item select:focus,
+        .form-group-item textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .field-readonly {
+            background: #f8fafc !important;
+            color: #64748b !important;
+            cursor: not-allowed;
+        }
+
+        .btn-flex-row {
+            display: flex;
+            gap: 14px;
+            margin-top: 32px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 13px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary-action { background: #2563eb; color: #ffffff; }
+        .btn-primary-action:hover { background: #1d4ed8; }
+
+        .btn-secondary-action { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+        .btn-secondary-action:hover { background: #e2e8f0; }
+
+        .alert-error-box {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 14px 16px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="profile-container">
+
+    <div class="profile-header">
+        <h1>Complete Professional Profile</h1>
+        <p>Fill in your service specialization details to start receiving customer job dispatches.</p>
+    </div>
+
+    {% if error %}
+    <div class="alert-error-box">
+        ⚠️ {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="info-step-box">
+        <strong>📋 Step 1 of 1:</strong> Select your technical service category, experience, and service cities. Name and contact details are automatically linked to your registered partner account.
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group-item">
+            <label for="name">Technician Name</label>
+            <input type="text" id="name" name="name" value="{{ technician.username }}" readonly class="field-readonly">
+        </div>
+
+        <div class="form-group-item">
+            <label for="contact">Contact Phone Number</label>
+            <input type="text" id="contact" name="contact" value="{{ technician.contact }}" readonly class="field-readonly">
+        </div>
+
+        <div class="form-group-item">
+            <label for="service_category">Primary Specialization Category</label>
+            <select id="service_category" name="service_category" required>
+                <option value="">-- Select a Service Category --</option>
+                {% for service in services %}
+                    <option value="{{ service.name }}" {% if technician.service_category == service.name %}selected{% endif %}>
+                        {{ service.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group-item">
+            <label for="years_of_experience">Years of Experience</label>
+            <input type="number" id="years_of_experience" name="years_of_experience" min="0" max="50" placeholder="e.g. 5" value="{% if technician.years_of_experience %}{{ technician.years_of_experience }}{% endif %}" required>
+        </div>
+
+        <div class="form-group-item">
+            <label for="working_locations">Working Cities / Service Areas</label>
+            <textarea id="working_locations" name="working_locations" placeholder="e.g., Delhi, Gurgaon, Noida, South Delhi" required style="resize:none; height:90px;">{% if technician.working_locations %}{{ technician.working_locations }}{% endif %}</textarea>
+            <span style="font-size:12px; color:#64748b; margin-top:4px; display:block;">Separate city names using commas.</span>
+        </div>
+
+        <div class="btn-flex-row">
+            <button type="submit" class="btn-action btn-primary-action">
+                Save &amp; Complete Profile
+            </button>
+            <a href="{% url 'technician_dashboard' %}" class="btn-action btn-secondary-action">
+                Cancel
+            </a>
+        </div>
+    </form>
+
+</div>
+
+</body>
+</html>

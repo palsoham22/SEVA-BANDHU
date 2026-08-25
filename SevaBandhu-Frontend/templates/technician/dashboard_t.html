@@ -1,0 +1,784 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Technician Partner Workspace | Seva Bandhu{% endblock %}
+
+{% block content %}
+
+<script>
+console.log("🔥 Technician JS Engine Initialized");
+
+let technicianServiceCategory = "{{ technician.service_category }}";
+
+function openProfileModal() {
+    document.getElementById('profileModal').classList.add('show');
+}
+
+function closeProfileModal() {
+    document.getElementById('profileModal').classList.remove('show');
+}
+
+window.onclick = function(event) {
+    var modal = document.getElementById('profileModal');
+    if (event.target == modal) {
+        modal.classList.remove('show');
+    }
+}
+
+// WebSocket Connection
+const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+const socket = new WebSocket(wsProtocol + window.location.host + "/ws/requests/");
+
+socket.onopen = function() {
+    console.log("WebSocket Connected ✅");
+};
+
+socket.onmessage = function(event) {
+    try {
+        const data = JSON.parse(event.data);
+        if (data.type === "new_request") {
+            addNotificationCard(data);
+        } else if (data.type === "notification_removed") {
+            removeNotificationByRequest(data.request_id);
+        }
+    } catch (e) {
+        console.error("❌ WebSocket Error:", e);
+    }
+};
+
+function acceptRequest(requestId, notificationId) {
+    fetch(`/technician/accept-request/${requestId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCSRFToken(),
+            "Content-Type": "application/json"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            const card = document.getElementById(`notification-${notificationId}`);
+            if (card) { card.remove(); }
+            incrementDashboardCounts();
+            alert("✅ Service Request Accepted!");
+            window.location.reload();
+        } else {
+            alert("❌ " + (data.message || "Request already assigned to another technician."));
+        }
+    })
+    .catch(err => console.error("❌ Error:", err));
+}
+
+function incrementDashboardCounts() {
+    const total = document.getElementById('totalJobsCount');
+    const assigned = document.getElementById('assignedJobsCount');
+    if (total) { total.textContent = parseInt(total.textContent || 0) + 1; }
+    if (assigned) { assigned.textContent = parseInt(assigned.textContent || 0) + 1; }
+}
+
+function dismissNotification(notificationId) {
+    fetch(`/technician/dismiss-notification/${notificationId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCSRFToken(),
+            "Content-Type": "application/json"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            const card = document.getElementById(`notification-${notificationId}`);
+            if (card) { card.remove(); }
+            updateNotificationCount();
+        }
+    })
+    .catch(err => console.error(err));
+}
+
+function addNotificationCard(data) {
+    const container = document.getElementById('notificationContainer');
+    if (!container) return;
+
+    const noMsg = document.getElementById('no-notification-msg');
+    if (noMsg) { noMsg.remove(); }
+
+    const card = document.createElement('div');
+    card.className = "notification-card";
+    card.id = `notification-live-${data.request_id}`;
+
+    card.innerHTML = `
+        <div class="notification-card-header">
+            <span class="category-badge">${data.service_category}</span>
+            <span class="priority-pill priority-${(data.priority || 'Normal').toLowerCase()}">${data.priority || 'Normal'} Priority</span>
+        </div>
+        <div class="notification-info">
+            <p><strong>City / Area:</strong> ${data.city}</p>
+            <p><strong>Preferred Slot:</strong> ${data.preferred_date} • ${data.preferred_time}</p>
+        </div>
+        <div class="notification-actions">
+            <button onclick="location.reload()" class="btn-action btn-action-primary">
+                View &amp; Accept Request
+            </button>
+        </div>
+    `;
+
+    container.prepend(card);
+    updateNotificationCount();
+}
+
+function updateNotificationCount() {
+    const cards = document.querySelectorAll('.notification-card');
+    const countElement = document.getElementById('notificationCount');
+    if (countElement) {
+        countElement.textContent = cards.length;
+    }
+}
+
+function removeNotificationByRequest(requestId) {
+    const buttons = document.querySelectorAll('[data-request-id]');
+    buttons.forEach(button => {
+        if (button.dataset.requestId == requestId) {
+            const card = button.closest('.notification-card');
+            if (card) { card.remove(); }
+        }
+    });
+    updateNotificationCount();
+}
+
+function getCSRFToken() {
+    return document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+}
+
+// =========================================================
+// FALLBACK: AJAX POLLING FOR NOTIFICATIONS
+// Ensures 100% reliability if WebSockets are blocked by proxies or process limits
+// =========================================================
+setInterval(() => {
+    fetch('/technician/api/notifications/', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success' && data.notifications) {
+            data.notifications.forEach(notif => {
+                // Check if card already exists (from Django template or live WS)
+                const exists1 = document.getElementById(`notification-${notif.id}`);
+                const exists2 = document.getElementById(`notification-live-${notif.request_id}`);
+                
+                if (!exists1 && !exists2) {
+                    console.log("🔥 Polling found new notification!");
+                    addNotificationCard(notif);
+                }
+            });
+        }
+    })
+    .catch(err => console.error("Polling Error:", err));
+}, 5000); // Poll every 5 seconds
+</script>
+
+<style>
+/* =========================================================
+   Executive Technician Dashboard – Customer Page Alignment
+========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+.dashboard-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+    background-color: #f8fafc;
+}
+
+/* Header Banner - Matching Customer Layout */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid #2563eb;
+    border-radius: 16px;
+    padding: 28px 32px;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.03);
+}
+
+.header-title h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px 0;
+}
+
+.header-title p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid transparent;
+}
+
+.btn-action-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.btn-action-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    color: #ffffff;
+}
+
+.btn-action-outline {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+
+.btn-action-outline:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #94a3b8;
+}
+
+.btn-action-danger {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.btn-action-danger:hover {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+/* Profile Avatar Button */
+.profile-avatar-btn {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.profile-avatar-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.4);
+}
+
+/* Color-Shaded Metric Cards Grid - Matching Customer Pages */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 32px;
+}
+
+.metric-card {
+    border-radius: 16px;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* Card 1 - Blue Shade */
+.card-shade-blue {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #bfdbfe;
+}
+.card-shade-blue .metric-icon { background: #2563eb; color: #ffffff; }
+.card-shade-blue .metric-number { color: #1e40af; }
+.card-shade-blue .metric-label { color: #1d4ed8; }
+
+/* Card 2 - Amber Shade */
+.card-shade-amber {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+    border: 1px solid #fed7aa;
+}
+.card-shade-amber .metric-icon { background: #d97706; color: #ffffff; }
+.card-shade-amber .metric-number { color: #9a3412; }
+.card-shade-amber .metric-label { color: #c2410c; }
+
+/* Card 3 - Violet Shade */
+.card-shade-violet {
+    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+    border: 1px solid #ddd6fe;
+}
+.card-shade-violet .metric-icon { background: #7c3aed; color: #ffffff; }
+.card-shade-violet .metric-number { color: #5b21b6; }
+.card-shade-violet .metric-label { color: #6d28d9; }
+
+/* Card 4 - Emerald Shade */
+.card-shade-emerald {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 1px solid #a7f3d0;
+}
+.card-shade-emerald .metric-icon { background: #059669; color: #ffffff; }
+.card-shade-emerald .metric-number { color: #065f46; }
+.card-shade-emerald .metric-label { color: #047857; }
+
+.metric-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.metric-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-number {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.metric-label {
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 3px;
+}
+
+/* Panel Card Container */
+.panel-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+    padding: 28px;
+    margin-bottom: 28px;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.panel-header h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.count-badge {
+    background: #2563eb;
+    color: #ffffff;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.notification-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.notification-card {
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 14px;
+    padding: 20px;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.notification-card:hover {
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+.notification-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.notification-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16.5px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.category-badge {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.priority-pill {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.priority-high, .priority-emergency { background: #fee2e2; color: #b91c1c; }
+.priority-normal { background: #f1f5f9; color: #475569; }
+
+.notification-info p {
+    margin: 6px 0;
+    color: #475569;
+    font-size: 13.5px;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* Modal Popup */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    padding: 20px;
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: #ffffff;
+    padding: 32px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 540px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e2e8f0;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-header h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+.close-modal:hover { color: #0f172a; }
+
+.profile-field-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.profile-field-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.profile-field-item label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.profile-field-item value {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0f172a;
+    display: block;
+}
+
+@media (max-width: 1024px) {
+    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+    .metrics-grid { grid-template-columns: 1fr; }
+    .profile-field-group { grid-template-columns: 1fr; }
+}
+</style>
+
+<div class="dashboard-container">
+
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="header-title">
+            <h1>Technician Partner Workspace</h1>
+            <p>Welcome back, <strong>{{ technician.username }}</strong>! Monitor live dispatches and manage assigned jobs.</p>
+        </div>
+
+        <div class="header-actions">
+            <a href="{% url 'technician_my_jobs' %}" class="btn-action btn-action-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                My Assigned Jobs
+            </a>
+
+            {% if not technician.profile_completed %}
+            <a href="{% url 'technician_complete_profile' %}" class="btn-action btn-action-outline">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Complete Profile
+            </a>
+            {% endif %}
+
+            <a href="{% url 'technician_logout' %}" class="btn-action btn-action-danger">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+            </a>
+
+            <button class="profile-avatar-btn" onclick="openProfileModal()" title="View Profile">
+                {{ technician.username|upper|first }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Color-Shaded Metric Cards Grid -->
+    <div class="metrics-grid">
+        <div class="metric-card card-shade-blue">
+            <div class="metric-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <div class="metric-content">
+                <div class="metric-number" id="totalJobsCount">{{ total_jobs }}</div>
+                <div class="metric-label">Total Dispatches</div>
+            </div>
+        </div>
+
+        <div class="metric-card card-shade-amber">
+            <div class="metric-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="metric-content">
+                <div class="metric-number" id="assignedJobsCount">{{ pending_jobs }}</div>
+                <div class="metric-label">Assigned Jobs</div>
+            </div>
+        </div>
+
+        <div class="metric-card card-shade-violet">
+            <div class="metric-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div class="metric-content">
+                <div class="metric-number" id="ongoingJobsCount">{{ in_progress_jobs }}</div>
+                <div class="metric-label">In Progress / En Route</div>
+            </div>
+        </div>
+
+        <div class="metric-card card-shade-emerald">
+            <div class="metric-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="metric-content">
+                <div class="metric-number" id="completedJobsCount">{{ completed_jobs }}</div>
+                <div class="metric-label">Completed Jobs</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Card: Real-Time Notifications -->
+    <div class="panel-card">
+        <div class="panel-header">
+            <h3>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Real-Time Job Dispatches
+                <span class="count-badge" id="notificationCount">{{ notifications|length }}</span>
+            </h3>
+        </div>
+
+        <div id="notificationContainer" class="notification-container">
+            {% if notifications %}
+                {% for notification in notifications %}
+                    <div id="notification-{{ notification.id }}" class="notification-card">
+                        <div class="notification-card-header">
+                            <div class="notification-title">{{ notification.title }}</div>
+                            <span class="category-badge">{{ technician.service_category|default:"General Repair" }}</span>
+                        </div>
+
+                        <div class="notification-info">
+                            <p>{{ notification.message }}</p>
+                        </div>
+
+                        <div class="notification-actions">
+                            <button data-request-id="{{ notification.service_request.id }}"
+                                    onclick="acceptRequest('{{ notification.service_request.id }}', '{{ notification.id }}')"
+                                    class="btn-action btn-action-primary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                Accept Job Request
+                            </button>
+
+                            <button onclick="dismissNotification('{{ notification.id }}')"
+                                    class="btn-action btn-action-danger">
+                                Dismiss
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p id="no-notification-msg" style="color: #94a3b8; font-size: 14px; text-align: center; padding: 24px 0; margin: 0;">
+                    No new job dispatches currently waiting. Stand by for live incoming requests.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<!-- Profile Details Modal -->
+<div id="profileModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Technician Profile</h3>
+            <button class="close-modal" onclick="closeProfileModal()">✕</button>
+        </div>
+
+        {% if technician.profile_completed %}
+            <div style="background:#dcfce7; color:#15803d; border:1px solid #a7f3d0; padding:10px 14px; border-radius:10px; font-weight:700; font-size:13px; margin-bottom:18px; display:inline-flex; align-items:center; gap:6px;">
+                ✓ Verified Partner Profile
+            </div>
+
+            <div class="profile-field-group">
+                <div class="profile-field-item">
+                    <label>Full Name</label>
+                    <value>{{ technician.username }}</value>
+                </div>
+                <div class="profile-field-item">
+                    <label>Email Address</label>
+                    <value>{{ technician.email }}</value>
+                </div>
+                <div class="profile-field-item">
+                    <label>Contact Phone</label>
+                    <value>{{ technician.contact }}</value>
+                </div>
+                <div class="profile-field-item">
+                    <label>Service Speciality</label>
+                    <value>{{ technician.service_category }}</value>
+                </div>
+                <div class="profile-field-item">
+                    <label>Years Experience</label>
+                    <value>{{ technician.years_of_experience }} Years</value>
+                </div>
+                <div class="profile-field-item">
+                    <label>Service Areas</label>
+                    <value>{{ technician.working_locations }}</value>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end;">
+                <button class="btn-action btn-action-outline" onclick="closeProfileModal()">Close</button>
+            </div>
+
+        {% else %}
+            <div style="background:#fef3c7; color:#92400e; border:1px solid #fde68a; padding:10px 14px; border-radius:10px; font-weight:700; font-size:13px; margin-bottom:18px;">
+                ⚠️ Profile Setup Incomplete
+            </div>
+
+            <p style="color:#64748b; font-size:14px; margin-bottom:20px;">
+                Please complete your professional service category, experience, and working cities to receive job dispatches.
+            </p>
+
+            <div style="display:flex; gap:12px;">
+                <a href="{% url 'technician_complete_profile' %}" class="btn-action btn-action-primary" style="flex:1; justify-content:center;">
+                    Complete Profile Now
+                </a>
+                <button class="btn-action btn-action-outline" onclick="closeProfileModal()">Close</button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+/* =========================================================
+   Executive Support Tickets List Theme (Corporate UI)
+========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+.requests-wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+    background-color: #f8fafc;
+}
+
+.req-header-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 28px 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.req-header-card h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px 0;
+}
+
+.req-header-card p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+.btn-new-booking {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 11px 20px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-new-booking:hover {
+    background: #1e293b;
+    color: #ffffff;
+}
+
+/* Card Container */
+.requests-grid-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.request-item-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    transition: all 0.2s ease;
+}
+
+.request-item-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.card-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.req-category-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.req-id-badge {
+    font-family: ui-monospace, monospace;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #2563eb;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-right: 8px;
+}
+
+.status-tag-pill {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tag-open { background: #e0f2fe; color: #0369a1; }
+.tag-resolved { background: #dcfce7; color: #15803d; }
+
+.description-box {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.admin-response-box {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 13.5px;
+    color: #0f172a;
+}
+.admin-response-box strong {
+    color: #334155;
+    display: block;
+    margin-bottom: 6px;
+}
+
+</style>
+
+<div class="requests-wrapper">
+
+    <!-- Header -->
+    <div class="req-header-card">
+        <div>
+            <h1>My Support Tickets</h1>
+            <p>Track the status of your complaints and refund requests.</p>
+        </div>
+        <a href="{% url 'customer_dashboard' %}" class="btn-new-booking" style="background:#2563eb;">
+            &larr; Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Error -->
+    {% if error %}
+    <div style="background:#fee2e2; border:1px solid #fecaca; color:#b91c1c; padding:14px; border-radius:10px; margin-bottom:24px; font-size:13.5px; font-weight:600;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- List -->
+    {% if support_tickets %}
+    <div class="requests-grid-list">
+        {% for ticket in support_tickets %}
+        <div class="request-item-card">
+
+            <!-- Top Header -->
+            <div class="card-top-bar">
+                <div>
+                    <span class="req-id-badge">TICKET #{{ ticket.id }}</span>
+                    <span class="req-category-title">{{ ticket.ticket_type }}</span>
+                </div>
+
+                {% if ticket.status == 'Resolved' %}
+                <span class="status-tag-pill tag-resolved">Resolved</span>
+                {% else %}
+                <span class="status-tag-pill tag-open">Open</span>
+                {% endif %}
+            </div>
+
+            <!-- Details Section -->
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                
+                <!-- Ticket Metadata -->
+                <div style="display:flex; flex-wrap:wrap; gap:16px; font-size:13px; color:#64748b; background:#f8fafc; padding:12px 16px; border-radius:8px;">
+                    <div>
+                        <strong style="color:#475569;">Date:</strong> {{ ticket.created_at|date:"M d, Y h:i A"|default:"Recently" }}
+                    </div>
+                    {% if ticket.service_request_id %}
+                    <div>
+                        <strong style="color:#475569;">Booking ID:</strong> #{{ ticket.service_request_id }}
+                    </div>
+                    {% endif %}
+                    {% if ticket.technician_name %}
+                    <div>
+                        <strong style="color:#475569;">Technician:</strong> {{ ticket.technician_name }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- User Description -->
+                <div>
+                    <h4 style="font-size:13px; text-transform:uppercase; letter-spacing:0.05em; color:#94a3b8; margin:0 0 8px 0;">Your Issue</h4>
+                    <p style="margin:0; font-size:14.5px; color:#334155; line-height:1.6;">{{ ticket.description }}</p>
+                </div>
+
+                <!-- Admin Response -->
+                {% if ticket.status == 'Resolved' %}
+                <div class="admin-response-box" style="margin-top:8px; border-left:4px solid #10b981; background:#ecfdf5; border-color:#d1fae5; color:#064e3b; padding:16px 20px;">
+                    <strong style="color:#047857; text-transform:uppercase; font-size:12px; letter-spacing:0.05em; margin-bottom:6px; display:block;">Admin Resolution</strong>
+                    <span style="font-size:14px; line-height:1.5;">Please check your registered email inbox for the detailed resolution from our team.</span>
+                </div>
+                {% endif %}
+                
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:60px 20px; background:#ffffff; border:1px solid #e2e8f0; border-radius:16px;">
+        <h3 style="font-size:18px; font-weight:700; color:#0f172a; margin-bottom:6px;">No Support Tickets</h3>
+        <p style="color:#64748b; font-size:14px; margin-bottom:18px;">If you have any issues, use the AI Chatbot to raise a complaint or request a refund.</p>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

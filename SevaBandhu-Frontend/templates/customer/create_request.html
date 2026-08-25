@@ -1,0 +1,889 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+
+<style>
+/* =========================================================
+   Executive Service Booking Form Theme (Corporate UI)
+========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+.booking-wrapper {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+    background-color: #f8fafc;
+}
+
+.booking-header {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 28px 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.booking-header h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px 0;
+}
+
+.booking-header p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+.btn-back-link {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-back-link:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+/* User Strip */
+.user-strip {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.user-strip-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar-sm {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-text-details strong {
+    display: block;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.user-text-details span {
+    font-size: 12.5px;
+    color: #64748b;
+}
+
+/* Form Layout Grid */
+.form-layout-grid {
+    display: grid;
+    grid-template-columns: 2.2fr 1fr;
+    gap: 28px;
+}
+
+.card-form-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    margin-bottom: 24px;
+}
+
+.card-form-box h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 18px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.form-full-row {
+    grid-column: 1 / -1;
+}
+
+.field-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+}
+
+.field-group input[type="text"],
+.field-group input[type="date"],
+.field-group select,
+.field-group textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-size: 14px;
+    font-family: inherit;
+    color: #0f172a;
+    transition: all 0.2s ease;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.field-group textarea {
+    min-height: 95px;
+    resize: vertical;
+}
+
+.field-help-text {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+/* Location Detect Buttons */
+.address-mode-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.btn-detect-location, .btn-manual-address {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-detect-location:hover, .btn-manual-address:hover {
+    background: #f8fafc;
+}
+.btn-detect-location.active, .btn-manual-address.active {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+/* Service Choose Box */
+.service-input-picker {
+    display: flex;
+    gap: 10px;
+}
+
+.service-input-picker input {
+    flex: 1;
+    background: #f8fafc;
+}
+
+.btn-choose-service {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+}
+
+.btn-choose-service:hover {
+    background: #1d4ed8;
+}
+
+/* Priority Card Selectors */
+.priority-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.priority-option-card {
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 12px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.priority-option-card:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+}
+
+.priority-option-card input {
+    display: none;
+}
+
+.priority-option-card input:checked + .priority-option-label {
+    color: #2563eb;
+    font-weight: 700;
+}
+
+.priority-option-card:has(input:checked) {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.priority-option-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+}
+
+/* Actions Row */
+.actions-footer-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    margin-top: 24px;
+}
+
+.btn-submit-request {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 13px 26px;
+    border-radius: 10px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
+    transition: all 0.2s ease;
+}
+
+.btn-submit-request:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+/* Sidebar Guarantee Box */
+.sidebar-info-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.sidebar-info-card h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 16px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.sidebar-g-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.sidebar-g-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.sidebar-g-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sidebar-g-text strong {
+    display: block;
+    font-size: 13.5px;
+    color: #0f172a;
+}
+
+.sidebar-g-text p {
+    font-size: 12px;
+    color: #64748b;
+    margin: 2px 0 0 0;
+}
+
+@media (max-width: 900px) {
+    .form-layout-grid { grid-template-columns: 1fr; }
+    .priority-cards-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .form-inputs-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<div class="booking-wrapper">
+
+    <!-- Header -->
+    <div class="booking-header">
+        <div>
+            <h1>Create Service Request</h1>
+            <p>Specify your service details and location address for technician dispatch.</p>
+        </div>
+        <a href="{% url 'customer_dashboard' %}" class="btn-back-link">
+            ← Dashboard
+        </a>
+    </div>
+
+    <!-- Customer Strip -->
+    {% if customer %}
+    <div class="user-strip">
+        <div class="user-strip-info">
+            <div class="user-avatar-sm">{{ customer.username|upper|first }}</div>
+            <div class="user-text-details">
+                <strong>Booking Account: {{ customer.username }}</strong>
+                <span>{{ customer.email }} • Contact: {{ customer.contact|default:"Provided in Form" }}</span>
+            </div>
+        </div>
+        <span style="font-size:12px; font-weight:600; color:#15803d; background:#dcfce7; padding:4px 10px; border-radius:6px;">
+            Verified Account
+        </span>
+    </div>
+    {% endif %}
+
+    <!-- Error Message -->
+    {% if error %}
+    <div style="background:#fee2e2; border:1px solid #fecaca; color:#b91c1c; padding:14px 18px; border-radius:10px; margin-bottom:24px; font-size:13.5px; font-weight:600;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post" onsubmit="const btn=document.getElementById('submitBtn'); btn.disabled=true; btn.innerHTML='Submitting...'; btn.style.opacity='0.7';">
+        {% csrf_token %}
+
+        <input type="hidden" name="customer_latitude" id="customer_latitude">
+        <input type="hidden" name="customer_longitude" id="customer_longitude">
+
+        <div class="form-layout-grid">
+
+            <!-- Left Form Fields Column -->
+            <div>
+
+                <!-- Service Information Box -->
+                <div class="card-form-box">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        Service Specifications
+                    </h3>
+
+                    <div class="form-inputs-grid">
+
+                        <!-- Service Category -->
+                        <div class="field-group form-full-row">
+                            <label>Service Category</label>
+                            <div class="service-input-picker">
+                                <input type="text" id="serviceCategory" name="service_category" placeholder="No service selected" value="{{ selected_service }}" readonly required>
+                                <button type="button" class="btn-choose-service" data-url="{% url 'service_selection' %}" onclick="window.location.href=this.getAttribute('data-url')">
+                                    Choose Category
+                                </button>
+                            </div>
+                            <div class="field-help-text">Select category from available services list.</div>
+                        </div>
+
+                        <!-- Date -->
+                        <div class="field-group">
+                            <label>Preferred Service Date</label>
+                            <input type="date" name="preferred_service_date" required>
+                        </div>
+
+                        <!-- Time Slot -->
+                        <div class="field-group">
+                            <label>Preferred Time Slot</label>
+                            <select name="preferred_time_slot" required>
+                                <option value="">Select time slot</option>
+                                <option value="09:00 AM – 12:00 PM">09:00 AM – 12:00 PM</option>
+                                <option value="12:00 PM – 03:00 PM">12:00 PM – 03:00 PM</option>
+                                <option value="03:00 PM – 06:00 PM">03:00 PM – 06:00 PM</option>
+                                <option value="06:00 PM – 09:00 PM">06:00 PM – 09:00 PM</option>
+                            </select>
+                        </div>
+
+                        <!-- Contact -->
+                        <div class="field-group form-full-row">
+                            <label>Contact Phone Number</label>
+                            <input type="text" name="contact_number" placeholder="+91XXXXXXXXXX" value="{% if customer %}{{ customer.contact }}{% endif %}" required>
+                            <div class="field-help-text">Technician will reach out on this number upon arrival.</div>
+                        </div>
+
+                        <!-- Problem Description -->
+                        <div class="field-group form-full-row">
+                            <label>Detailed Issue Description</label>
+                            <textarea name="problem_description" placeholder="Explain the problem in detail (e.g. AC unit not cooling, leaking faucet)..." required></textarea>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Address Box -->
+                <div class="card-form-box">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Service Location Address
+                    </h3>
+
+                    <div class="address-mode-selector">
+                        <button type="button" class="btn-detect-location" id="btnDetectAddress" onclick="detectAddress()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                            Auto-Detect Location
+                        </button>
+                        <button type="button" class="btn-manual-address active" id="btnManualAddress" onclick="setManualAddress()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon></svg>
+                            Enter Manually
+                        </button>
+                    </div>
+
+                    <div class="form-inputs-grid">
+                        <div class="field-group">
+                            <label>House / Flat No.</label>
+                            <input type="text" name="house_flat_no" placeholder="e.g. Flat 402, Block A" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Street / Area</label>
+                            <input type="text" name="street_area" placeholder="e.g. Park Street, Sector 2" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label>City</label>
+                            <input type="text" name="city" placeholder="e.g. Kolkata" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Pincode</label>
+                            <input type="text" name="pincode" placeholder="e.g. 700091" required>
+                        </div>
+
+                        <div class="field-group form-full-row">
+                            <label>Landmark (Optional)</label>
+                            <input type="text" name="additional_landmark" placeholder="e.g. Near City Hospital">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Promo Code Box -->
+                <div class="card-form-box" id="promoCodeBox">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        Apply Promo Code
+                    </h3>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="promoCodeInput" placeholder="Enter coupon code" style="flex: 1; padding: 11px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 14px; text-transform: uppercase;">
+                        <button type="button" id="applyPromoBtn" onclick="applyPromoCode()" style="background: #16a34a; color: white; border: none; border-radius: 8px; padding: 0 16px; font-weight: 600; cursor: pointer; transition: background 0.2s;">Apply</button>
+                    </div>
+                    <div id="promoMessage" style="margin-top: 10px; font-size: 13px; font-weight: 600; display: none;"></div>
+                    
+                    <!-- Hidden field to send code to backend upon submit -->
+                    <input type="hidden" name="applied_promo_code" id="appliedPromoCode" value="">
+                    
+                    <!-- Visual price breakdown (starts hidden) -->
+                    <div id="promoPriceBreakdown" style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed #cbd5e1; display: none;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13.5px; color: #64748b; margin-bottom: 6px;">
+                            <span>Original Estimated Price</span>
+                            <span id="originalPriceDisplay" style="text-decoration: line-through;"></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 13.5px; color: #16a34a; margin-bottom: 10px; font-weight: 600;">
+                            <span>Discount Applied</span>
+                            <span id="discountAmountDisplay"></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 17px; color: #0f172a; font-weight: 800;">
+                            <span>New Total (Est.)</span>
+                            <span id="newTotalDisplay"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Priority & Payment -->
+                <div class="card-form-box">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Priority &amp; Payment Options
+                    </h3>
+
+                    <div class="field-group" style="margin-bottom:18px;">
+                        <label>Service Priority Level</label>
+                        <div class="priority-cards-grid">
+                            <label class="priority-option-card">
+                                <input type="radio" name="priority" value="Low" required>
+                                <span class="priority-option-label">Low</span>
+                            </label>
+                            <label class="priority-option-card">
+                                <input type="radio" name="priority" value="Medium" required checked>
+                                <span class="priority-option-label">Medium</span>
+                            </label>
+                            <label class="priority-option-card">
+                                <input type="radio" name="priority" value="High" required>
+                                <span class="priority-option-label">High</span>
+                            </label>
+                            <label class="priority-option-card">
+                                <input type="radio" name="priority" value="Emergency" required>
+                                <span class="priority-option-label">Emergency</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label>Payment Method</label>
+                        <select name="payment_method" required>
+                            <option value="">Select Payment Method</option>
+                            <option value="online">Online Payment (Card / UPI / NetBanking)</option>
+                            <option value="offline">Cash / Offline Payment After Service</option>
+                        </select>
+                    </div>
+
+                    <div class="actions-footer-row">
+                        <button type="submit" id="submitBtn" class="btn-submit-request">
+                            Submit Service Request →
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Sidebar -->
+            <div>
+                <div class="sidebar-info-card">
+                    <h4>Service Standards</h4>
+
+                    <div class="sidebar-g-list">
+                        <div class="sidebar-g-item">
+                            <div class="sidebar-g-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            </div>
+                            <div class="sidebar-g-text">
+                                <strong>Verified Technicians</strong>
+                                <p>100% background-checked professionals.</p>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-g-item">
+                            <div class="sidebar-g-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            </div>
+                            <div class="sidebar-g-text">
+                                <strong>Fixed Upfront Pricing</strong>
+                                <p>No hidden surcharges or surprise fees.</p>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-g-item">
+                            <div class="sidebar-g-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                            </div>
+                            <div class="sidebar-g-text">
+                                <strong>Fast Dispatch</strong>
+                                <p>Optimized location matching.</p>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-g-item">
+                            <div class="sidebar-g-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                            </div>
+                            <div class="sidebar-g-text">
+                                <strong>30-Day Guarantee</strong>
+                                <p>Complimentary follow-up if required.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const service = params.get("service");
+
+if (service) {
+    document.getElementById("serviceCategory").value = service;
+}
+
+// Auto-detect will be triggered manually by the user click
+
+function setManualAddress() {
+    document.getElementById("btnDetectAddress").classList.remove("active");
+    document.getElementById("btnManualAddress").classList.add("active");
+    
+    // Clear all fields for manual entry
+    document.querySelector('input[name="city"]').value = "";
+    document.querySelector('input[name="pincode"]').value = "";
+    document.querySelector('input[name="street_area"]').value = "";
+    document.getElementById("customer_latitude").value = "";
+    document.getElementById("customer_longitude").value = "";
+}
+
+async function detectAddress() {
+    const btn = document.getElementById("btnDetectAddress");
+    const manualBtn = document.getElementById("btnManualAddress");
+    
+    manualBtn.classList.remove("active");
+    btn.classList.add("active");
+    
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ Detecting...';
+    
+    if (!("geolocation" in navigator)) {
+        alert("Geolocation is not supported by your browser.");
+        btn.innerHTML = originalText;
+        setManualAddress();
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        async function(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            document.getElementById("customer_latitude").value = lat;
+            document.getElementById("customer_longitude").value = lon;
+            
+            try {
+                // Reverse geocoding using Nominatim (OpenStreetMap)
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                const data = await response.json();
+                
+                if (data && data.address) {
+                    const addr = data.address;
+                    
+                    // Fill City
+                    const city = addr.city || addr.town || addr.village || addr.county || "";
+                    if (city) document.querySelector('input[name="city"]').value = city;
+                    
+                    // Fill Pincode
+                    const pincode = addr.postcode || "";
+                    if (pincode) document.querySelector('input[name="pincode"]').value = pincode;
+                    
+                    // Fill Street/Area
+                    const area = addr.suburb || addr.neighbourhood || addr.road || addr.residential || "";
+                    if (area) document.querySelector('input[name="street_area"]').value = area;
+                }
+            } catch (err) {
+                console.error("Geocoding failed:", err);
+                alert("Could not fetch address details. Please enter manually.");
+            }
+            
+            btn.innerHTML = originalText;
+        },
+        function(error) {
+            console.warn("Location error:", error);
+            alert("Could not access your location. Please check your browser permissions.");
+            btn.innerHTML = originalText;
+            setManualAddress();
+        },
+        { timeout: 10000 }
+    );
+}
+
+// Check for auto-applied code via URL parameter
+const promoParam = params.get("rec");
+if (promoParam && service) {
+    // If it's from a recommendation, we might not have a generic promo param, 
+    // but if we do pass a code via URL, we can capture it. 
+    // (Assuming we might pass ?code=WELCOME20 in the future)
+    const codeParam = params.get("code");
+    if(codeParam) {
+        document.getElementById("promoCodeInput").value = codeParam;
+        // Optionally auto-apply
+        // applyPromoCode();
+    }
+}
+
+async function applyPromoCode() {
+    const codeInput = document.getElementById('promoCodeInput');
+    const serviceCategory = document.getElementById('serviceCategory').value;
+    const msgDiv = document.getElementById('promoMessage');
+    const breakdown = document.getElementById('promoPriceBreakdown');
+    const hiddenInput = document.getElementById('appliedPromoCode');
+    
+    if (!serviceCategory) {
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#b91c1c';
+        msgDiv.innerText = 'Please select a Service Category first.';
+        return;
+    }
+    
+    const code = codeInput.value.trim();
+    if (!code) {
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#b91c1c';
+        msgDiv.innerText = 'Please enter a promo code.';
+        return;
+    }
+    
+    const btn = document.getElementById('applyPromoBtn');
+    btn.innerHTML = '...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/apply-coupon/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                code: code,
+                service_name: serviceCategory
+            })
+        });
+        
+        const result = await response.json();
+        
+        msgDiv.style.display = 'block';
+        if (result.status === 'success') {
+            msgDiv.style.color = '#15803d';
+            msgDiv.innerText = '🎉 ' + result.message;
+            
+            // Set hidden field so backend registers it on form submit
+            hiddenInput.value = code;
+            
+            // Show breakdown
+            document.getElementById('originalPriceDisplay').innerText = '₹' + result.original_price;
+            document.getElementById('discountAmountDisplay').innerText = '- ₹' + result.discount_amount;
+            document.getElementById('newTotalDisplay').innerText = '₹' + result.new_total;
+            breakdown.style.display = 'block';
+            
+            // Lock input
+            codeInput.disabled = true;
+            btn.innerHTML = 'Applied';
+            btn.style.background = '#94a3b8';
+        } else {
+            msgDiv.style.color = '#b91c1c';
+            msgDiv.innerText = '❌ ' + result.message;
+            breakdown.style.display = 'none';
+            hiddenInput.value = '';
+            btn.innerHTML = 'Apply';
+            btn.disabled = false;
+        }
+    } catch (err) {
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#b91c1c';
+        msgDiv.innerText = 'An error occurred while verifying the code.';
+        btn.innerHTML = 'Apply';
+        btn.disabled = false;
+    }
+}
+</script>
+
+{% if smart_offer %}
+<!-- Smart Offer Modal -->
+<div id="smartOfferModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px);">
+    <div style="background: #ffffff; width: 100%; max-width: 420px; border-radius: 16px; padding: 32px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); position: relative; text-align: center; animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+        <button type="button" onclick="document.getElementById('smartOfferModal').style.display='none'" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer;">&times;</button>
+        
+        <div style="width: 56px; height: 56px; background: #fef3c7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: #d97706;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        
+        <h3 style="margin: 0 0 8px 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; color: #0f172a;">Special Offer For You!</h3>
+        <p style="margin: 0 0 20px 0; font-size: 14.5px; color: #475569; line-height: 1.5;">{{ ml_context_msg }}</p>
+        
+        <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Use Promo Code</div>
+            <div style="font-size: 24px; font-weight: 800; color: #2563eb; letter-spacing: 1px;">{{ smart_offer.code }}</div>
+            <div style="font-size: 13px; color: #16a34a; font-weight: 600; margin-top: 6px;">{{ smart_offer.title }}</div>
+        </div>
+        
+        <button type="button" onclick="applySmartOffer('{{ smart_offer.code }}')" style="width: 100%; background: #2563eb; color: #ffffff; border: none; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s;">
+            Apply Discount Now
+        </button>
+    </div>
+</div>
+<style>
+@keyframes modalPop {
+    0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+</style>
+<script>
+function applySmartOffer(code) {
+    document.getElementById('smartOfferModal').style.display = 'none';
+    document.getElementById('promoCodeInput').value = code;
+    
+    // Check if service category is set before applying automatically
+    const serviceCategory = document.getElementById('serviceCategory').value;
+    if (serviceCategory) {
+        applyPromoCode(); // Attempt auto-apply
+    }
+    
+    // Scroll to promo code section
+    document.getElementById('promoCodeBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const box = document.getElementById('promoCodeBox');
+    box.style.transition = 'background 0.5s';
+    box.style.background = '#eff6ff';
+    setTimeout(() => { box.style.background = '#ffffff'; }, 1000);
+}
+</script>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Update Job Status | Seva Bandhu{% endblock %}
+
+{% block content %}
+
+<style>
+/* =========================================================
+   Update Job Status Theme
+========================================================= */
+
+.status-wrapper {
+    padding: 32px 24px;
+    max-width: 720px;
+    margin: 0 auto;
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+.status-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 36px;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+}
+
+.status-card-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.status-card-header h2 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+}
+
+.status-card-header p {
+    color: #64748b;
+    font-size: 14.5px;
+}
+
+.job-summary-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 28px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 13.5px;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.summary-row:last-child { border-bottom: none; }
+
+.summary-label { color: #64748b; font-weight: 600; }
+.summary-val { color: #0f172a; font-weight: 700; }
+
+.status-pill {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.status-assigned { background: #dbeafe; color: #1e40af; }
+.status-in-progress { background: #fef3c7; color: #92400e; }
+.status-completed { background: #dcfce7; color: #15803d; }
+.status-pending { background: #f1f5f9; color: #475569; }
+
+.form-group-field {
+    margin-bottom: 22px;
+}
+
+.form-group-field label {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.form-group-field select,
+.form-group-field textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    font-size: 14px;
+    font-family: inherit;
+    color: #0f172a;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.form-group-field select:focus,
+.form-group-field textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-group-field textarea {
+    resize: none;
+    height: 100px;
+    line-height: 1.6;
+}
+
+.btn-group-row {
+    display: flex;
+    gap: 14px;
+    margin-top: 28px;
+}
+
+.status-btn {
+    flex: 1;
+    padding: 13px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.status-btn-save { background: #2563eb; color: #ffffff; }
+.status-btn-save:hover { background: #1d4ed8; }
+
+.status-btn-cancel { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+.status-btn-cancel:hover { background: #e2e8f0; }
+</style>
+
+<div class="status-wrapper">
+
+    <div class="status-card">
+        <div class="status-card-header">
+            <h2>Update Service Job Progress</h2>
+            <p>Select the new job state to keep the customer and super admin updated in real-time.</p>
+        </div>
+
+        {% if my_jobs %}
+            {% for job in my_jobs %}
+            <div class="job-summary-box">
+                <div class="summary-row">
+                    <span class="summary-label">Request ID</span>
+                    <span class="summary-val" style="color:#2563eb;">#REQ-{{ job.id }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Service Category</span>
+                    <span class="summary-val">{{ job.service_detail.service_category }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Customer Name</span>
+                    <span class="summary-val">{{ job.customer_username }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Current Status</span>
+                    <span class="status-pill {% if job.status == 'Assigned' %}status-assigned{% elif job.status == 'In Progress' %}status-in-progress{% elif job.status == 'Completed' %}status-completed{% else %}status-pending{% endif %}">
+                        {{ job.status }}
+                    </span>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="job_id" value="{{ job.id }}">
+
+                <div class="form-group-field">
+                    <label for="status_{{ job.id }}">New Job Status</label>
+                    <select name="status" id="status_{{ job.id }}" required>
+                        <option value="">-- Select New Status --</option>
+                        {% if job.status == 'Assigned' %}
+                            <option value="In Progress">In Progress (Started Work)</option>
+                            <option value="Completed">Completed (Finished Job)</option>
+                        {% elif job.status == 'In Progress' %}
+                            <option value="Completed">Completed (Finished Job)</option>
+                        {% else %}
+                            <option value="Completed" selected>Completed</option>
+                        {% endif %}
+                    </select>
+                </div>
+
+                <div class="form-group-field">
+                    <label for="remarks_{{ job.id }}">Remarks &amp; Work Summary (Optional)</label>
+                    <textarea name="remarks" id="remarks_{{ job.id }}" placeholder="Add details regarding completed repairs, replaced parts, or client notes..."></textarea>
+                </div>
+
+                <div class="btn-group-row">
+                    <button type="submit" class="status-btn status-btn-save">
+                        Confirm &amp; Update Status
+                    </button>
+                    <a href="{% url 'technician_my_jobs' %}" class="status-btn status-btn-cancel">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+
+            {% if not forloop.last %}
+            <hr style="margin: 28px 0; border: none; border-top: 1px dashed #e2e8f0;">
+            {% endif %}
+            {% endfor %}
+        {% else %}
+            <div style="text-align:center; padding:32px 0;">
+                <p style="color:#64748b; margin-bottom:18px;">No assigned jobs found to update.</p>
+                <a href="{% url 'technician_my_jobs' %}" class="status-btn status-btn-save" style="display:inline-flex; width:auto; padding:10px 20px;">
+                    View Assigned Jobs
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

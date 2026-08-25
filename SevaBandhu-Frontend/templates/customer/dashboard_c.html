@@ -1,0 +1,888 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+/* =========================================================
+   Executive Customer Dashboard – Refined Color Accents
+========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+.dashboard-container {
+    width: min(1480px, calc(100% - 48px));
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 16px 0;
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+    background-color: #f8fafc;
+    height: calc(100vh - 72px); /* Assuming navbar is around 72px */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Section */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid #2563eb;
+    border-radius: 12px;
+    padding: 16px 24px;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.03);
+}
+
+.header-title h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px 0;
+}
+
+.header-title p {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-action-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.btn-action-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    color: #ffffff;
+}
+
+.btn-action-outline {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+
+.btn-action-outline:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #94a3b8;
+}
+
+/* Color Shaded Metric Cards Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.metric-card {
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+}
+
+/* Card 1 - Blue Shade */
+.card-shade-blue {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #bfdbfe;
+}
+.card-shade-blue .metric-icon { background: #2563eb; color: #ffffff; }
+.card-shade-blue .metric-number { color: #1e3a8a; }
+.card-shade-blue .metric-label { color: #1d4ed8; }
+
+/* Card 2 - Amber Shade */
+.card-shade-amber {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1px solid #fde68a;
+}
+.card-shade-amber .metric-icon { background: #d97706; color: #ffffff; }
+.card-shade-amber .metric-number { color: #78350f; }
+.card-shade-amber .metric-label { color: #c2410c; }
+
+/* Card 3 - Violet Shade */
+.card-shade-violet {
+    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+    border: 1px solid #ddd6fe;
+}
+.card-shade-violet .metric-icon { background: #7c3aed; color: #ffffff; }
+.card-shade-violet .metric-number { color: #5b21b6; }
+.card-shade-violet .metric-label { color: #6d28d9; }
+
+/* Card 4 - Emerald Shade */
+.card-shade-emerald {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 1px solid #a7f3d0;
+}
+.card-shade-emerald .metric-icon { background: #059669; color: #ffffff; }
+.card-shade-emerald .metric-number { color: #065f46; }
+.card-shade-emerald .metric-label { color: #047857; }
+
+.metric-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.metric-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-number {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.metric-label {
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+/* Layout Columns */
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.panel-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.panel-card:last-child {
+    margin-bottom: 0;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.panel-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.panel-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.panel-link:hover {
+    text-decoration: underline;
+}
+
+/* Colored Category Quick Pills */
+.category-pills {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+}
+
+.category-pill-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 10px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: #0f172a;
+    transition: all 0.25s ease;
+    gap: 8px;
+    border: 1px solid transparent;
+}
+
+/* Individual Color Accents */
+.cat-amber { background: #fffbebf5; border-color: #fef3c7; }
+.cat-amber .category-pill-icon { background: #fef3c7; color: #d97706; }
+.cat-amber:hover { background: #fef3c7; border-color: #fde68a; transform: translateY(-3px); }
+
+.cat-blue { background: #eff6fff5; border-color: #dbeafe; }
+.cat-blue .category-pill-icon { background: #dbeafe; color: #2563eb; }
+.cat-blue:hover { background: #dbeafe; border-color: #bfdbfe; transform: translateY(-3px); }
+
+.cat-cyan { background: #ecfefff5; border-color: #cffafe; }
+.cat-cyan .category-pill-icon { background: #cffafe; color: #0891b2; }
+.cat-cyan:hover { background: #cffafe; border-color: #a5f3fc; transform: translateY(-3px); }
+
+.cat-emerald { background: #ecfdf5f5; border-color: #d1fae5; }
+.cat-emerald .category-pill-icon { background: #d1fae5; color: #059669; }
+.cat-emerald:hover { background: #d1fae5; border-color: #a7f3d0; transform: translateY(-3px); }
+
+.cat-purple { background: #faf5fff5; border-color: #f3e8ff; }
+.cat-purple .category-pill-icon { background: #f3e8ff; color: #7c3aed; }
+.cat-purple:hover { background: #f3e8ff; border-color: #e9d5ff; transform: translateY(-3px); }
+
+.cat-orange { background: #fff7edf5; border-color: #ffedd5; }
+.cat-orange .category-pill-icon { background: #ffedd5; color: #ea580c; }
+.cat-orange:hover { background: #ffedd5; border-color: #fed7aa; transform: translateY(-3px); }
+
+.category-pill-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-pill-name {
+    font-size: 12.5px;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* Requests Data Table */
+.table-container {
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+
+.table-custom {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.table-custom th {
+    background: #f8fafc;
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.table-custom td {
+    padding: 14px 16px;
+    font-size: 13.5px;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.table-custom tr:last-child td {
+    border-bottom: none;
+}
+
+.table-custom tr:hover td {
+    background: #f8fafc;
+}
+
+.req-tag {
+    font-family: ui-monospace, monospace;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #2563eb;
+    background: #eff6ff;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid #bfdbfe;
+}
+
+/* Status Pills */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.status-assigned { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+.status-progress { background: #f3e8ff; color: #6d28d9; border: 1px solid #e9d5ff; }
+.status-completed { background: #dcfce7; color: #15803d; border: 1px solid #a7f3d0; }
+.status-cancelled { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+.btn-table-action {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-table-action:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.btn-table-action-primary {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+}
+
+.btn-table-action-primary:hover {
+    background: #1d4ed8;
+    color: #ffffff;
+}
+
+/* Sidebar Styling */
+.user-profile-box {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 16px;
+}
+
+.user-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+}
+
+.user-meta h4 {
+    font-size: 15.5px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 2px 0;
+}
+
+.user-meta p {
+    font-size: 12.5px;
+    color: #64748b;
+    margin: 0;
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 13px;
+    color: #475569;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tech-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+
+.tech-item:last-child {
+    margin-bottom: 0;
+}
+
+.tech-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.call-link {
+    font-size: 12px;
+    font-weight: 700;
+    color: #15803d;
+    text-decoration: none;
+    background: #dcfce7;
+    border: 1px solid #a7f3d0;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.call-link:hover {
+    background: #15803d;
+    color: #ffffff;
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.activity-item {
+    font-size: 13px;
+    color: #334155;
+    line-height: 1.4;
+    padding-left: 12px;
+    border-left: 3px solid #2563eb;
+}
+
+.activity-date {
+    font-size: 11.5px;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+.empty-box {
+    text-align: center;
+    padding: 32px 16px;
+    color: #64748b;
+}
+
+.empty-box p {
+    font-size: 13.5px;
+    margin-bottom: 14px;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-layout { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    .category-pills { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 640px) {
+    .metrics-grid { grid-template-columns: 1fr; }
+    .category-pills { grid-template-columns: repeat(2, 1fr); }
+    .header-actions { width: 100%; }
+    .btn-action { flex: 1; justify-content: center; }
+}
+</style>
+
+<div class="dashboard-container">
+
+    <!-- Top Header -->
+    <div class="page-header">
+        <div class="header-title">
+            <h1>Customer Portal Dashboard</h1>
+            <p>Welcome back, {{ customer.username }}. Overview of active service dispatches and history.</p>
+        </div>
+
+        <div class="header-actions">
+            <a href="{% url 'customer_create_request' %}" class="btn-action btn-action-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New Service Request
+            </a>
+            <a href="{% url 'customer_my_requests' %}" class="btn-action btn-action-outline">
+                All Bookings
+            </a>
+            <a href="{% url 'customer_account' %}" class="btn-action btn-action-outline">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                My Profile
+            </a>
+            <a href="{% url 'customer_wallet' %}" class="btn-action" style="background:#1e3a8a; color:white; border:none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                My Wallet (₹{{ customer.wallet_balance }})
+            </a>
+        </div>
+    </div>
+
+    <!-- Color Shaded Metric Cards Grid -->
+    <div class="metrics-grid">
+        <div class="metric-card card-shade-blue">
+            <div class="metric-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+            </div>
+            <div class="metric-content">
+                <span class="metric-number">{{ total_requests }}</span>
+                <span class="metric-label">Total Requests</span>
+            </div>
+        </div>
+
+        <div class="metric-card card-shade-amber">
+            <div class="metric-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="metric-content">
+                <span class="metric-number">{{ pending_requests }}</span>
+                <span class="metric-label">Pending Dispatch</span>
+            </div>
+        </div>
+
+        <div class="metric-card card-shade-violet">
+            <div class="metric-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div class="metric-content">
+                <span class="metric-number">{{ in_progress_requests }}</span>
+                <span class="metric-label">Active / In Progress</span>
+            </div>
+        </div>
+
+        <div class="metric-card card-shade-emerald">
+            <div class="metric-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="metric-content">
+                <span class="metric-number">{{ completed_requests }}</span>
+                <span class="metric-label">Completed Services</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Layout -->
+    <div class="dashboard-layout">
+
+        <!-- Left Column -->
+        <div style="display: flex; flex-direction: column; overflow: hidden;">
+
+            <!-- Book Service Shortcut Panel -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h3 class="panel-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        Service Category Launcher
+                    </h3>
+                    <a href="{% url 'service_selection' %}" class="panel-link">View All Categories →</a>
+                </div>
+
+                <div class="category-pills">
+                    <a href="{% url 'customer_create_request' %}?service=Electrical" class="category-pill-item cat-amber">
+                        <div class="category-pill-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        </div>
+                        <span class="category-pill-name">Electrical</span>
+                    </a>
+
+                    <a href="{% url 'customer_create_request' %}?service=Plumbing" class="category-pill-item cat-blue">
+                        <div class="category-pill-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+                        </div>
+                        <span class="category-pill-name">Plumbing</span>
+                    </a>
+
+                    <a href="{% url 'customer_create_request' %}?service=AC Repair" class="category-pill-item cat-cyan">
+                        <div class="category-pill-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
+                        </div>
+                        <span class="category-pill-name">AC Repair</span>
+                    </a>
+
+                    <a href="{% url 'customer_create_request' %}?service=Home Cleaning" class="category-pill-item cat-emerald">
+                        <div class="category-pill-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3h18v4H3zM5 7v14h14V7M10 11v6M14 11v6"/></svg>
+                        </div>
+                        <span class="category-pill-name">Cleaning</span>
+                    </a>
+
+                    <a href="{% url 'customer_create_request' %}?service=Painting" class="category-pill-item cat-purple">
+                        <div class="category-pill-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                        </div>
+                        <span class="category-pill-name">Painting</span>
+                    </a>
+
+                    <a href="{% url 'customer_create_request' %}?service=Carpentry" class="category-pill-item cat-orange">
+                        <div class="category-pill-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        </div>
+                        <span class="category-pill-name">Carpentry</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Requests Table Panel -->
+            <div class="panel-card" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
+                <div class="panel-header">
+                    <h3 class="panel-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Recent Service Requests
+                    </h3>
+                    <a href="{% url 'customer_my_requests' %}" class="panel-link">View All Bookings →</a>
+                </div>
+
+                {% if service_requests %}
+                <div class="table-container" style="flex-grow: 1; overflow-y: auto;">
+                    <table class="table-custom">
+                        <thead style="position: sticky; top: 0; background: #ffffff; z-index: 1;">
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Category</th>
+                                <th>Technician</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in service_requests %}
+                            <tr>
+                                <td>
+                                    <span class="req-tag">#REQ-{{ item.request.id }}</span>
+                                </td>
+                                <td>
+                                    <strong style="color: #0f172a;">{{ item.request.service_category }}</strong>
+                                </td>
+                                <td>
+                                    {% if item.technician %}
+                                    <span>{{ item.technician.username }}</span>
+                                    {% else %}
+                                    <span style="color: #94a3b8; font-size: 12.5px;">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.request.status == 'Pending' %}
+                                    <span class="status-pill status-pending">Pending</span>
+                                    {% elif item.request.status == 'Accepted' or item.request.status == 'Assigned' %}
+                                    <span class="status-pill status-assigned">Assigned</span>
+                                    {% elif item.request.status == 'In Progress' %}
+                                    <span class="status-pill status-progress">In Progress</span>
+                                    {% elif item.request.status == 'Completed' %}
+                                    <span class="status-pill status-completed">Completed</span>
+                                    {% else %}
+                                    <span class="status-pill status-cancelled">{{ item.request.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span style="color: #64748b; font-size: 13px;">{{ item.request.preferred_service_date|date:"d M Y" }}</span>
+                                </td>
+                                <td>
+                                    {% if item.request.status == 'In Progress' or item.request.status == 'Accepted' or item.request.status == 'Assigned' %}
+                                    <a href="{% url 'customer_tracking' item.request.id %}" class="btn-table-action btn-table-action-primary">
+                                        Track
+                                    </a>
+                                    {% elif item.request.status == 'Completed' %}
+                                    <a href="{% url 'invoice_pdf' item.request.id %}" target="_blank" class="btn-table-action">
+                                        Invoice
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'customer_my_requests' %}" class="btn-table-action">
+                                        Details
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-box">
+                    <p>No service requests recorded.</p>
+                    <a href="{% url 'customer_create_request' %}" class="btn-action btn-action-primary">
+                        + Create Request
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            </div>
+
+            <!-- View Support Tickets Button -->
+            <div class="panel-card" style="display:flex; align-items:center; justify-content:space-between; padding: 24px; flex-wrap: wrap; gap: 16px; margin-top: 20px; flex-shrink: 0;">
+                <div style="flex: 1 1 200px;">
+                    <h3 class="panel-title" style="margin-bottom:6px;">My Support Tickets</h3>
+                    <p style="font-size:13px; color:#64748b; margin:0; line-height: 1.5;">View your complaints, refund requests, and admin responses.</p>
+                </div>
+                <a href="{% url 'customer_support_tickets' %}" style="background:#2563eb; color:#ffffff; padding:11px 20px; border-radius:10px; font-size:13.5px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:8px; white-space:nowrap; box-shadow:0 1px 2px rgba(37, 99, 235, 0.2);">
+                    View My Tickets &rarr;
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+    {% include 'customer/chatbot.html' %}
+
+    {% if welcome_offer %}
+    <!-- Welcome Offer Modal Overlay -->
+    <div id="welcomeOfferModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+        <div style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); width: min(90%, 460px); border-radius: 20px; padding: 40px 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.25); position: relative; text-align: center; border: 4px solid #fef08a; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
+            
+            <!-- Close Button -->
+            <button onclick="closeWelcomeModal()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #94a3b8; transition: color 0.2s;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            
+            <div style="width: 80px; height: 80px; margin: 0 auto 20px auto; background: #fef9c3; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ca8a04; box-shadow: 0 4px 12px rgba(202, 138, 4, 0.2);">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+            </div>
+            
+            <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; font-weight: 800; color: #0f172a; margin: 0 0 12px 0;">{{ welcome_offer.offer.title }}</h2>
+            <p style="font-size: 15px; color: #475569; margin: 0 0 24px 0; line-height: 1.5;">{{ welcome_offer.offer.description }}</p>
+            
+            <div style="background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                <p style="font-size: 13px; font-weight: 600; color: #64748b; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.05em;">Your Promo Code</p>
+                <div style="font-family: ui-monospace, monospace; font-size: 28px; font-weight: 800; color: #2563eb; letter-spacing: 2px;">
+                    {{ welcome_offer.offer.code }}
+                </div>
+            </div>
+            
+            <button onclick="closeWelcomeModal()" style="width: 100%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.3); transition: transform 0.2s;">
+                Awesome, let's book!
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                document.getElementById('welcomeOfferModal').style.display = 'flex';
+            }, 500);
+        });
+
+        function closeWelcomeModal() {
+            document.getElementById('welcomeOfferModal').style.display = 'none';
+        }
+    </script>
+    {% elif recommended_services %}
+    <!-- Recommendation Modal Overlay -->
+    <div id="recommendationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+        <!-- Modal Content -->
+        <div style="background: #ffffff; width: min(90%, 500px); border-radius: 16px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
+            <!-- Close Button -->
+            <button onclick="closeRecModal()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #64748b; padding: 4px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 16px; background: #eff6ff; color: #2563eb; margin-bottom: 16px;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 8px 0;">Recommended For You</h2>
+                <p style="font-size: 14px; color: #64748b; margin: 0; line-height: 1.5;">Based on your activity, we think you might need these services.</p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                {% for item in recommended_services %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; transition: all 0.2s ease;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; border-radius: 8px; background: #e0e7ff; color: #3730a3; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #1e293b;">
+                                ⭐ {{ item.service.name }}
+                            </h4>
+                            <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b; font-style: italic;">
+                                {{ item.reason }}
+                            </p>
+                            <p style="margin: 4px 0 0 0; font-size: 13px; color: #15803d; font-weight: 600;">Starts at ₹{{ item.service.price }}</p>
+                        </div>
+                    </div>
+                    <a href="{% url 'customer_create_request' %}?service={{ item.service.name|urlencode }}&rec=1" style="background: #2563eb; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; box-shadow: 0 2px 6px rgba(37,99,235,0.2);">
+                        Book Now
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const recModal = document.getElementById('recommendationModal');
+            if (recModal && !sessionStorage.getItem('recommendationModalShown')) {
+                // Show modal slightly after page load for better effect
+                setTimeout(() => {
+                    recModal.style.display = 'flex';
+                }, 800);
+            }
+        });
+
+        function closeRecModal() {
+            document.getElementById('recommendationModal').style.display = 'none';
+            sessionStorage.setItem('recommendationModalShown', 'true');
+        }
+    </script>
+    {% endif %}
+
+    <style>
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+
+</div>
+
+{% endblock %}

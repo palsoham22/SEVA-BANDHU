@@ -1,0 +1,443 @@
+<!-- Seva Assistant Chatbot -->
+<style>
+#seva-chatbot {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 10000;
+    font-family: 'Inter', sans-serif;
+}
+
+#chat-toggle {
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(37,99,235,0.4);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+#chat-toggle:hover {
+    transform: scale(1.05);
+}
+
+#chat-window {
+    display: none;
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.2);
+    border: 1px solid #e5e7eb;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width 0.3s ease, height 0.3s ease, border-radius 0.3s ease, bottom 0.3s ease, right 0.3s ease;
+}
+
+#chat-window.maximized {
+    width: min(80vw, 800px);
+    height: 80vh;
+}
+
+@media (max-width: 768px) {
+    #chat-window.maximized {
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
+        z-index: 10001;
+    }
+}
+
+#chat-header {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    padding: 16px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#chat-close {
+    cursor: pointer;
+    font-size: 20px;
+}
+
+#chat-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #f8fafc;
+}
+
+.chat-bubble {
+    padding: 12px 16px;
+    border-radius: 14px;
+    max-width: 85%;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.chat-ai {
+    background: white;
+    border: 1px solid #e5e7eb;
+    color: #111827;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+.chat-user {
+    background: #2563eb;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-bubble table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 12.5px;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.chat-bubble th, .chat-bubble td {
+    border: 1px solid #e5e7eb;
+    padding: 6px 10px;
+    text-align: left;
+}
+
+.chat-bubble th {
+    background-color: #f1f5f9;
+    font-weight: 600;
+}
+
+.chat-user table th {
+    background-color: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.2);
+}
+.chat-user table td, .chat-user table {
+    border-color: rgba(255,255,255,0.2);
+}
+
+#chat-input-area {
+    padding: 16px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    gap: 8px;
+    background: white;
+}
+
+#chat-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    outline: none;
+    font-size: 14px;
+}
+
+#chat-input:focus {
+    border-color: #2563eb;
+}
+
+#chat-send {
+    background: #2563eb;
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#chat-send:hover {
+    background: #1d4ed8;
+}
+
+.quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.quick-btn {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #2563eb;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-btn:hover {
+    background: #2563eb;
+    color: white;
+}
+
+.typing-indicator {
+    display: none;
+    padding: 12px 16px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    font-size: 12px;
+    color: #6b7280;
+}
+</style>
+
+<div id="seva-chatbot">
+    <div id="chat-window">
+        <div id="chat-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="background: rgba(255,255,255,0.2); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15.5px; font-weight: 700; letter-spacing: 0.02em;">Seva Bandhu Assistant</span>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <span id="chat-expand" style="cursor: pointer; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" title="Maximize">
+                    <svg id="expand-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                </span>
+                <span id="chat-close" style="cursor: pointer; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" title="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </span>
+            </div>
+        </div>
+        <div id="chat-messages">
+            <div class="chat-bubble chat-ai">
+                Hello! How can I help you today?
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="sendQuickAction('Track technician')">Track technician</button>
+                    <button class="quick-btn" onclick="sendQuickAction('My bookings')">My bookings</button>
+                    <button class="quick-btn" onclick="sendQuickAction('Refund policy')">Refund</button>
+                    <button class="quick-btn" onclick="sendQuickAction('Complaint')">Complaint</button>
+                </div>
+            </div>
+            <div class="typing-indicator" id="typing-indicator">Seva AI is typing...</div>
+        </div>
+        <div id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ask anything..." autocomplete="off">
+            <button id="chat-send">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+    </div>
+    
+    <div id="chat-toggle">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+const chatToggle = document.getElementById('chat-toggle');
+const chatWindow = document.getElementById('chat-window');
+const chatClose = document.getElementById('chat-close');
+const chatExpand = document.getElementById('chat-expand');
+const expandIcon = document.getElementById('expand-icon');
+const chatInput = document.getElementById('chat-input');
+const chatSend = document.getElementById('chat-send');
+const chatMessages = document.getElementById('chat-messages');
+const typingIndicator = document.getElementById('typing-indicator');
+
+let chatHistory = [];
+
+chatToggle.addEventListener('click', () => {
+    chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
+});
+
+chatClose.addEventListener('click', () => {
+    chatWindow.style.display = 'none';
+});
+
+let isMaximized = false;
+chatExpand.addEventListener('click', () => {
+    isMaximized = !isMaximized;
+    if (isMaximized) {
+        chatWindow.classList.add('maximized');
+        chatExpand.title = "Minimize";
+        expandIcon.innerHTML = `<polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/>`;
+    } else {
+        chatWindow.classList.remove('maximized');
+        chatExpand.title = "Maximize";
+        expandIcon.innerHTML = `<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>`;
+    }
+});
+
+chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+chatSend.addEventListener('click', sendMessage);
+
+function sendQuickAction(text) {
+    if (text === 'Refund policy' || text === 'Complaint') {
+        const ticketType = text === 'Refund policy' ? 'Refund' : 'Complaint';
+        appendMessage('ai', `I can help you with that. Please describe your ${ticketType.toLowerCase()} below, and mention the Technician Name or Request ID if applicable.`);
+        
+        const formDiv = document.createElement('div');
+        formDiv.className = 'chat-bubble chat-ai';
+        formDiv.style.width = '90%';
+        formDiv.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <input type="text" id="ticket-req-id" placeholder="Request ID (required)" style="padding:8px; border:1px solid #e5e7eb; border-radius:6px; font-size:13px;">
+                <input type="text" id="ticket-tech" placeholder="Technician Name (optional)" style="padding:8px; border:1px solid #e5e7eb; border-radius:6px; font-size:13px;">
+                <textarea id="ticket-desc" placeholder="Describe your issue..." style="padding:8px; border:1px solid #e5e7eb; border-radius:6px; font-size:13px; resize:vertical; min-height:60px;"></textarea>
+                <button onclick="submitTicket('${ticketType}', this)" style="background:#2563eb; color:white; border:none; padding:8px; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px;">Submit Ticket</button>
+            </div>
+        `;
+        chatMessages.insertBefore(formDiv, typingIndicator);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    } else {
+        chatInput.value = text;
+        sendMessage();
+    }
+}
+
+async function submitTicket(type, btnElement) {
+    const container = btnElement.parentElement;
+    const reqId = container.querySelector('#ticket-req-id').value.trim();
+    const techName = container.querySelector('#ticket-tech').value.trim();
+    const desc = container.querySelector('#ticket-desc').value.trim();
+    
+    if (!reqId) {
+        alert('Please provide the Request ID for this ticket.');
+        return;
+    }
+    if (!desc) {
+        alert('Please provide a description.');
+        return;
+    }
+    
+    btnElement.textContent = 'Submitting...';
+    btnElement.disabled = true;
+    
+    try {
+        const response = await fetch('/customer/api/create-ticket/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                ticket_type: type,
+                description: desc,
+                technician_name: techName,
+                service_request_id: reqId
+            })
+        });
+        
+        const data = await response.json();
+        if (data.status === 'success') {
+            container.innerHTML = `<span style="color:#15803d; font-weight:600; font-size: 13px;">✓ We deeply apologize for the inconvenience. Our team will review your ticket shortly and provide a response. In case of any more replies or issues, you can raise another complaint.</span>`;
+        } else {
+            btnElement.textContent = 'Submit Ticket';
+            btnElement.disabled = false;
+            alert('Error: ' + data.message);
+        }
+    } catch (e) {
+        btnElement.textContent = 'Submit Ticket';
+        btnElement.disabled = false;
+        alert('Network error.');
+    }
+}
+
+function appendMessage(sender, text) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-bubble chat-${sender}`;
+    
+    // Parse markdown for AI responses, plain text for user
+    if (sender === 'ai') {
+        msgDiv.innerHTML = marked.parse(text);
+        
+        // Remove bottom margin from last paragraph for tighter spacing
+        const lastP = msgDiv.querySelector('p:last-child');
+        if (lastP) lastP.style.marginBottom = '0';
+        
+        // Style markdown lists inside the bubble
+        msgDiv.querySelectorAll('ul, ol').forEach(list => {
+            list.style.paddingLeft = '20px';
+            list.style.marginTop = '8px';
+            list.style.marginBottom = '8px';
+        });
+    } else {
+        msgDiv.textContent = text;
+    }
+    
+    // Insert before typing indicator
+    chatMessages.insertBefore(msgDiv, typingIndicator);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    chatInput.value = '';
+    appendMessage('user', text);
+    
+    typingIndicator.style.display = 'block';
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    try {
+        const response = await fetch('/customer/api/chat/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Add CSRF token if needed, but endpoint is csrf_exempt
+            },
+            body: JSON.stringify({
+                message: text,
+                history: chatHistory
+            })
+        });
+
+        const data = await response.json();
+        
+        typingIndicator.style.display = 'none';
+
+        if (data.status === 'success') {
+            appendMessage('ai', data.response);
+            
+            // Update history for context
+            chatHistory.push({"role": "user", "parts": [{"text": text}]});
+            chatHistory.push({"role": "model", "parts": [{"text": data.response}]});
+            
+            // Keep history short to avoid payload size issues (last 10 interactions)
+            if (chatHistory.length > 20) {
+                chatHistory = chatHistory.slice(chatHistory.length - 20);
+            }
+        } else {
+            appendMessage('ai', 'Error: ' + data.message);
+        }
+    } catch (err) {
+        typingIndicator.style.display = 'none';
+        appendMessage('ai', 'Network error. Please try again.');
+    }
+}
+</script>

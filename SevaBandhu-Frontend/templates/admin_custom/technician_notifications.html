@@ -1,0 +1,64 @@
+{% extends 'admin_custom/base_admin.html' %}
+
+{% block content %}
+    <h1>Technician Notification Feed</h1>
+
+    <form method="GET" class="search-bar">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search technician username, title..." style="min-width:320px;" />
+        <button type="submit" class="btn btn-primary">Search Feed</button>
+        {% if query %}
+            <a href="{% url 'admin_notifications_list' %}" class="btn btn-secondary">Clear Filter</a>
+        {% endif %}
+    </form>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Notif ID</th>
+                    <th>Recipient Tech</th>
+                    <th>Notification Title</th>
+                    <th>Message Details</th>
+                    <th>Read Status</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for notif in page_obj %}
+                <tr>
+                    <td><strong style="color:#2563eb;">#NTF-{{ notif.id }}</strong></td>
+                    <td>
+                        <a href="{% url 'admin_technician_detail' notif.technician.id %}" style="color: #7c3aed; text-decoration: none; font-weight: 700;">
+                            {{ notif.technician.username }}
+                        </a>
+                    </td>
+                    <td><strong style="color:#0f172a;">{{ notif.title }}</strong></td>
+                    <td style="color:#334155; max-width:280px; white-space:normal;">{{ notif.message }}</td>
+                    <td>
+                        {% if notif.is_read %}
+                            <span class="badge badge-success">Read</span>
+                        {% else %}
+                            <span class="badge badge-warning">Unread</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:#64748b; font-size:12.5px;">{{ notif.created_at|date:"M d, Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:32px;">No notification logs found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Prev</a>
+        {% endif %}
+
+        <span class="active">{{ page_obj.number }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next</a>
+        {% endif %}
+    </div>
+{% endblock %}

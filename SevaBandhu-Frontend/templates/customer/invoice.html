@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice</title>
+
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 1.2cm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Helvetica', 'Arial', sans-serif;
+      font-size: 13px;
+      color: #333333;
+      line-height: 1.4;
+      margin: 0;
+      padding: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    td,
+    th {
+      vertical-align: top;
+    }
+
+    /* =========================
+           HEADER
+        ========================== */
+
+    .header-table {
+      margin-bottom: 28px;
+    }
+
+    .logo {
+      font-size: 30px;
+      font-weight: bold;
+      color: #0b3979;
+      margin-bottom: 5px;
+    }
+
+    .title {
+      font-size: 30px;
+      font-weight: bold;
+      color: #555555;
+      text-align: right;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+    }
+
+    /* =========================
+           META INFORMATION
+        ========================== */
+
+    .meta-table {
+      margin-bottom: 28px;
+      page-break-inside: avoid;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #0b3979;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      border-bottom: 2px solid #0b3979;
+      padding-bottom: 4px;
+    }
+
+    /* =========================
+           ITEMS
+        ========================== */
+
+    .items-table {
+      page-break-inside: avoid;
+    }
+
+    .items-table th {
+      background-color: #0b3979;
+      color: #ffffff;
+      padding: 9px 10px;
+      font-size: 12px;
+      text-transform: uppercase;
+      text-align: left;
+    }
+
+    .items-table td {
+      padding: 10px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    /* =========================
+           TOTALS SECTION
+        ========================== */
+
+    .totals-section {
+      margin-top: 18px;
+      page-break-inside: avoid;
+    }
+
+    .payment-stamp-cell {
+      width: 55%;
+      vertical-align: middle;
+    }
+
+    .totals-cell {
+      width: 45%;
+      vertical-align: top;
+    }
+
+    .totals-table {
+      width: 100%;
+      margin: 0;
+      border-collapse: collapse;
+    }
+
+    .totals-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .subtotal-row td {
+      font-size: 14px;
+      color: #444444;
+    }
+
+    .total-row td {
+      font-size: 19px;
+      font-weight: bold;
+      color: #0b3979;
+      border-bottom: none;
+      padding-top: 11px;
+      padding-bottom: 8px;
+    }
+
+    .total-label {
+      text-align: left;
+    }
+
+    .total-amount {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* =========================
+           PAYMENT STATUS
+        ========================== */
+
+    .paid-stamp {
+      display: inline-block;
+      border: 3px solid #16a34a;
+      padding: 9px 14px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #16a34a;
+      letter-spacing: 1.5px;
+    }
+
+    .pending-stamp {
+      display: inline-block;
+      border: 3px solid #dc2626;
+      padding: 9px 14px;
+      font-size: 17px;
+      font-weight: bold;
+      color: #dc2626;
+      letter-spacing: 1.5px;
+    }
+
+    .status-paid {
+      color: #16a34a;
+      font-weight: bold;
+    }
+
+    .status-unpaid {
+      color: #dc2626;
+      font-weight: bold;
+    }
+
+    /* =========================
+           FOOTER
+        ========================== */
+
+    .footer {
+      margin-top: 30px;
+      font-size: 11px;
+      color: #777777;
+      text-align: center;
+      border-top: 1px solid #e0e0e0;
+      padding-top: 10px;
+      page-break-inside: avoid;
+    }
+
+    /* =========================
+           PRINT SAFETY
+        ========================== */
+
+    .no-break {
+      page-break-inside: avoid;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================
+         HEADER
+    ========================== -->
+
+  <table class="header-table">
+    <tr>
+      <td style="width: 50%;">
+        <div class="logo">Seva Bandhu</div>
+        <div>+91-800-000-0000</div>
+        <div>support@sevabandhu.com</div>
+      </td>
+
+      <td style="width: 50%;">
+        <div class="title">INVOICE</div>
+
+        <div class="text-right" style="margin-top: 8px;">
+          <strong>Invoice No:</strong> #SB-{{ service.id }}<br>
+          <strong>Date:</strong>
+          {{ service.created_at|date:"d M Y" }}
+        </div>
+      </td>
+    </tr>
+  </table>
+
+
+  <!-- =========================
+         BILLING / SERVICE INFO
+    ========================== -->
+
+  <table class="meta-table">
+    <tr>
+
+      <!-- BILL TO -->
+
+      <td style="width: 48%;">
+        <div class="section-title">Bill To</div>
+
+        <div style="
+                    font-size: 15px;
+                    font-weight: bold;
+                    margin-bottom: 3px;
+                ">
+          {{ service.customer_username|title }}
+        </div>
+
+        <div>{{ service.service_detail.contact_number }}</div>
+
+        <div>
+          {{ service.service_address.house_flat_no }},
+          {{ service.service_address.street_area }}
+        </div>
+
+        <div>
+          {{ service.service_address.city }}
+          -
+          {{ service.service_address.pincode }}
+        </div>
+      </td>
+
+      <td style="width: 4%;"></td>
+
+      <!-- SERVICE DETAILS -->
+
+      <td style="width: 48%;">
+        <div class="section-title">Service Details</div>
+
+        <table style="width: 100%;">
+
+          <tr>
+            <td style="padding-bottom: 5px;">
+              <strong>Technician:</strong>
+            </td>
+
+            <td class="text-right" style="padding-bottom: 5px;">
+              {% if service.technician_username %}
+              {{ service.technician_username|title }}
+              {% else %}
+              Not Assigned
+              {% endif %}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding-bottom: 5px;">
+              <strong>Payment Mode:</strong>
+            </td>
+
+            <td class="text-right" style="padding-bottom: 5px;">
+              {{ service.payment_method|capfirst }}
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <strong>Payment Status:</strong>
+            </td>
+
+            <td class="text-right">
+              <span class="
+                                {% if service.payment_status == 'paid' %}
+                                    status-paid
+                                {% else %}
+                                    status-unpaid
+                                {% endif %}
+                            ">
+                {{ service.payment_status|upper }}
+              </span>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+
+    </tr>
+  </table>
+
+
+  <!-- =========================
+         ITEMS TABLE
+    ========================== -->
+
+  <table class="items-table" style="margin-bottom: 0;">
+    <thead>
+      <tr>
+
+        <th style="width: 48%;">
+          Description
+        </th>
+
+        <th class="text-center" style="width: 12%;">
+          Qty
+        </th>
+
+        <th class="text-right" style="width: 20%;">
+          Price
+        </th>
+
+        <th class="text-right" style="width: 20%;">
+          Total
+        </th>
+
+      </tr>
+    </thead>
+
+    <tbody>
+
+      <tr>
+
+        <td>
+          {{ service.service_detail.service_category }}
+        </td>
+
+        <td class="text-center">
+          1
+        </td>
+
+        <td class="text-right">
+          Rs.&nbsp;{{ service.amount }}
+        </td>
+
+        <td class="text-right">
+          Rs.&nbsp;{{ service.amount }}
+        </td>
+
+      </tr>
+
+    </tbody>
+  </table>
+
+
+  <!-- =========================
+         TOTALS + PAYMENT STATUS
+    ========================== -->
+
+  <table class="totals-section">
+
+    <tr>
+
+      <!-- PAYMENT STAMP -->
+
+      <td class="payment-stamp-cell">
+
+        {% if service.payment_status == 'paid' %}
+
+        <div class="paid-stamp">
+          PAID IN FULL
+        </div>
+
+        {% else %}
+
+        <div class="pending-stamp">
+          PAYMENT PENDING
+        </div>
+
+        {% endif %}
+
+      </td>
+
+
+      <!-- TOTALS -->
+
+      <td class="totals-cell">
+
+        <table class="totals-table">
+
+          <!-- SUBTOTAL -->
+
+          <tr class="subtotal-row">
+
+            <td style="width: 50%;">
+              <strong>Subtotal</strong>
+            </td>
+
+            <td class="text-right" style="
+                                width: 50%;
+                                white-space: nowrap;
+                            ">
+              Rs.&nbsp;{{ service.amount }}
+            </td>
+
+          </tr>
+
+
+          <!-- TOTAL -->
+
+          <tr class="total-row">
+
+            <td class="total-label">
+              TOTAL
+            </td>
+
+            <td class="total-amount">
+              Rs.&nbsp;{{ service.amount }}
+            </td>
+
+          </tr>
+
+        </table>
+
+      </td>
+
+    </tr>
+
+  </table>
+
+
+  <!-- =========================
+         FOOTER
+    ========================== -->
+
+  <div class="footer">
+
+    <strong>
+      Thank you for choosing Seva Bandhu!
+    </strong>
+
+    <br>
+
+    If you have any questions about this invoice,
+    please contact support.
+
+  </div>
+
+</body>
+
+</html>

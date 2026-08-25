@@ -1,0 +1,166 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .metric-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #417690; }
+    .metric-title { color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+    .metric-value { color: #417690; font-size: 24px; font-weight: bold; margin: 0; }
+    .section-title { margin-top: 40px; margin-bottom: 20px; color: #417690; border-bottom: 2px solid #eee; padding-bottom: 10px; font-size: 18px; }
+    .data-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .data-table th, .data-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+    .data-table th { background: #f8f8f8; color: #666; font-weight: 600; text-transform: uppercase; font-size: 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h2 class="section-title">ML RECOMMENDATION ANALYTICS</h2>
+    
+    <div class="analytics-grid">
+        <div class="metric-card">
+            <div class="metric-title">Customers Analyzed</div>
+            <div class="metric-value">{{ customers_analyzed }}</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Interactions Evaluated</div>
+            <div class="metric-value">{{ interactions }}</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Model Status</div>
+            <div class="metric-value" style="font-size: 16px;">{{ model_status }}</div>
+            <div style="font-size: 10px; color:#888; margin-top: 5px;">Trained: {{ last_trained }}</div>
+        </div>
+    </div>
+
+    <div class="analytics-grid">
+        <div class="metric-card" style="border-color: #28a745;">
+            <div class="metric-title">Recs Generated</div>
+            <div class="metric-value">{{ recs_generated }}</div>
+        </div>
+        <div class="metric-card" style="border-color: #ffc107;">
+            <div class="metric-title">Recs Shown</div>
+            <div class="metric-value">{{ recs_shown }}</div>
+        </div>
+        <div class="metric-card" style="border-color: #17a2b8;">
+            <div class="metric-title">Recs Clicked</div>
+            <div class="metric-value">{{ recs_clicked }}</div>
+        </div>
+        <div class="metric-card" style="border-color: #dc3545;">
+            <div class="metric-title">Recs Booked</div>
+            <div class="metric-value">{{ recs_booked }}</div>
+        </div>
+    </div>
+
+    <div class="analytics-grid">
+        <div class="metric-card" style="border-color: #6f42c1;">
+            <div class="metric-title">Click-Through Rate (CTR)</div>
+            <div class="metric-value">{{ ctr }}%</div>
+        </div>
+        <div class="metric-card" style="border-color: #e83e8c;">
+            <div class="metric-title">Conversion Rate</div>
+            <div class="metric-value">{{ conversion_rate }}%</div>
+        </div>
+        <div class="metric-card" style="border-color: #fd7e14;">
+            <div class="metric-title">Avg Recommendation Score</div>
+            <div class="metric-value">{{ avg_score }}</div>
+        </div>
+    </div>
+
+    <h3 style="color:#666; font-size:14px; margin-bottom:10px;">Top Recommended Services</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Service Name</th>
+                <th>Times Recommended</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in top_recs %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.service__name }}</td>
+                <td>{{ item.count }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="text-align: center; color: #888;">No recommendations generated yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2 class="section-title">OFFER ANALYTICS</h2>
+
+    <div class="analytics-grid">
+        <div class="metric-card" style="border-left-color: #28a745;">
+            <div class="metric-title">Active Offers</div>
+            <div class="metric-value">{{ active_offers }} / {{ total_offers }}</div>
+        </div>
+        <div class="metric-card" style="border-left-color: #17a2b8;">
+            <div class="metric-title">Offers Assigned</div>
+            <div class="metric-value">{{ offers_assigned }}</div>
+        </div>
+        <div class="metric-card" style="border-left-color: #ffc107;">
+            <div class="metric-title">Offers Viewed</div>
+            <div class="metric-value">{{ offers_viewed }}</div>
+        </div>
+        <div class="metric-card" style="border-left-color: #dc3545;">
+            <div class="metric-title">Offers Redeemed</div>
+            <div class="metric-value">{{ offers_redeemed }}</div>
+        </div>
+    </div>
+
+    <div class="analytics-grid">
+        <div class="metric-card" style="border-left-color: #6f42c1;">
+            <div class="metric-title">Redemption Rate</div>
+            <div class="metric-value">{{ overall_redemption_rate }}%</div>
+        </div>
+        <div class="metric-card" style="border-left-color: #e83e8c;">
+            <div class="metric-title">Offer Bookings</div>
+            <div class="metric-value">{{ offer_bookings }}</div>
+        </div>
+        <div class="metric-card" style="border-left-color: #fd7e14;">
+            <div class="metric-title">Offer Revenue</div>
+            <div class="metric-value">₹{{ offer_revenue }}</div>
+        </div>
+    </div>
+
+    <h3 style="color:#666; font-size:14px; margin-bottom:10px;">Individual Offer Performance</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Offer Title</th>
+                <th>Code</th>
+                <th>Assigned</th>
+                <th>Viewed</th>
+                <th>Redeemed</th>
+                <th>Redemption Rate</th>
+                <th>Bookings</th>
+                <th>Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in individual_offers %}
+            <tr>
+                <td><strong>{{ item.title }}</strong></td>
+                <td><code style="background:#f1f1f1; padding:2px 6px; border-radius:4px;">{{ item.code }}</code></td>
+                <td>{{ item.assigned }}</td>
+                <td>{{ item.viewed }}</td>
+                <td>{{ item.redeemed }}</td>
+                <td>{{ item.redemption_rate }}%</td>
+                <td>{{ item.bookings }}</td>
+                <td style="color:#28a745; font-weight:bold;">₹{{ item.revenue }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" style="text-align: center; color: #888;">No offers created yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

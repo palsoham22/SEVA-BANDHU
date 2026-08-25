@@ -1,0 +1,54 @@
+{% extends 'admin_custom/base_admin.html' %}
+
+{% block content %}
+    <h1>Service Location Addresses</h1>
+
+    <form method="GET" class="search-bar">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search city, pincode, area..." style="min-width:320px;" />
+        <button type="submit" class="btn btn-primary">Search Locations</button>
+        {% if query %}
+            <a href="{% url 'admin_service_addresses_list' %}" class="btn btn-secondary">Clear Filter</a>
+        {% endif %}
+    </form>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Address ID</th>
+                    <th>Flat / House No.</th>
+                    <th>Street &amp; Area</th>
+                    <th>City</th>
+                    <th>Pincode</th>
+                    <th>Landmark</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for address in page_obj %}
+                <tr>
+                    <td><strong style="color:#2563eb;">#ADDR-{{ address.id }}</strong></td>
+                    <td><strong style="color:#0f172a;">{{ address.house_flat_no }}</strong></td>
+                    <td>{{ address.street_area }}</td>
+                    <td><span style="background:#eff6ff; color:#1d4ed8; font-weight:700; padding:2px 8px; border-radius:6px; font-size:12.5px;">{{ address.city }}</span></td>
+                    <td><strong>{{ address.pincode }}</strong></td>
+                    <td style="color:#64748b;">{{ address.additional_landmark|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:32px;">No service addresses found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Prev</a>
+        {% endif %}
+
+        <span class="active">{{ page_obj.number }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next</a>
+        {% endif %}
+    </div>
+{% endblock %}

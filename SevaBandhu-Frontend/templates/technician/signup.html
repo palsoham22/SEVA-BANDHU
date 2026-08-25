@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technician Signup | Seva Bandhu</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            min-height: 100vh;
+            background-color: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 20px;
+            position: relative;
+            overflow-x: hidden;
+            color: #0f172a;
+        }
+
+        /* Ambient Glowing Background Blobs */
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.45;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-orb-blue { width: 500px; height: 500px; background: #3b82f6; top: -120px; right: -80px; }
+        .bg-orb-indigo { width: 450px; height: 450px; background: #6366f1; bottom: -100px; left: -80px; }
+
+        .auth-container {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 28px;
+            border: 2px solid #ffffff;
+            padding: 44px 38px;
+            box-shadow: 0 20px 45px -10px rgba(37, 99, 235, 0.12), 0 10px 25px -5px rgba(15, 23, 42, 0.06);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .auth-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            margin-bottom: 18px;
+        }
+
+        .auth-logo-box {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 800;
+            box-shadow: 0 8px 18px -4px rgba(37, 99, 235, 0.4);
+        }
+
+        .auth-logo-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+        }
+
+        .auth-logo-text span {
+            background: linear-gradient(135deg, #2563eb 0%, #ff6b35 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 14px;
+            border-radius: 9999px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 30px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14.5px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 16px 14px 46px;
+            border-radius: 14px;
+            border: 1.5px solid #cbd5e1;
+            font-size: 14.5px;
+            font-family: inherit;
+            color: #0f172a;
+            background: #ffffff;
+            transition: all 0.25s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: 14px;
+            background: #ffffff;
+            color: #0f172a;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 14.5px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            margin-bottom: 16px;
+        }
+
+        .google-btn:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 24px -4px rgba(37, 99, 235, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px -4px rgba(37, 99, 235, 0.55);
+        }
+
+        .error-box {
+            background: #fef2f2;
+            border: 1.5px solid #fecaca;
+            color: #991b1b;
+            padding: 14px 16px;
+            border-radius: 14px;
+            margin-bottom: 22px;
+            font-size: 14px;
+        }
+
+        .auth-footer {
+            margin-top: 28px;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1.5px solid #f1f5f9;
+        }
+
+        .auth-footer p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .auth-footer a {
+            color: #2563eb;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 520px) {
+            .auth-card { padding: 32px 24px; border-radius: 22px; }
+            h1 { font-size: 26px; }
+        }
+    </style>
+
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "{{ firebase_config.api_key|escapejs }}",
+        authDomain: "{{ firebase_config.auth_domain|escapejs }}",
+        projectId: "{{ firebase_config.project_id|escapejs }}",
+        storageBucket: "{{ firebase_config.storage_bucket|escapejs }}",
+        messagingSenderId: "{{ firebase_config.messaging_sender_id|escapejs }}",
+        appId: "{{ firebase_config.app_id|escapejs }}"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    window.googleSignup = async function() {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            localStorage.setItem("google_name", user.displayName);
+            localStorage.setItem("google_email", user.email);
+            localStorage.setItem("google_photo", user.photoURL);
+            alert("Google Login Success ✅");
+        } catch (error) {
+            alert(error.message);
+        }
+    };
+    </script>
+</head>
+<body>
+
+    <div class="bg-orb bg-orb-blue"></div>
+    <div class="bg-orb bg-orb-indigo"></div>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            
+            <div class="auth-header">
+                <a href="{% url 'home' %}" class="auth-logo">
+                    <div class="auth-logo-box">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    </div>
+                    <div class="auth-logo-text">Seva <span>Bandhu</span></div>
+                </a>
+
+                <div>
+                    <span class="role-badge">🔧 Technician Partner Registration</span>
+                </div>
+
+                <h1>Join as a Technician Partner</h1>
+                <p class="subtitle">Get instant local job dispatches, live route navigation, and direct customer payments.</p>
+            </div>
+
+            {% if error %}
+            <div class="error-box">
+                ⚠️ {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-wrapper">
+                        <div class="input-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <input type="text" id="username" name="username" placeholder="Choose your technician username" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-wrapper">
+                        <div class="input-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                        </div>
+                        <input type="email" id="email" name="email" placeholder="name@example.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="contact">Contact Phone Number</label>
+                    <div class="input-wrapper">
+                        <div class="input-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        </div>
+                        <input type="text" id="contact" name="contact" placeholder="+91 98765 43210" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <div class="input-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+                    </div>
+                </div>
+
+                <button type="button" onclick="googleSignup()" class="google-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                    Continue with Google
+                </button>
+
+                <button type="submit" class="btn-submit">
+                    Sign Up as Technician Partner
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Already a registered technician? <a href="{% url 'technician_login' %}">Login to Tech Workspace</a></p>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

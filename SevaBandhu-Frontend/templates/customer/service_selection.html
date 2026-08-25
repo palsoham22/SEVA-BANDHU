@@ -1,0 +1,583 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+/* =========================================================
+   Executive Service Selection Theme (Refined Color Accents)
+========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+.selection-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+    background-color: #f8fafc;
+}
+
+/* Header Section */
+.page-header-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid #2563eb;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.03);
+    margin-bottom: 28px;
+}
+
+.header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.page-header-card h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px 0;
+}
+
+.page-header-card p {
+    font-size: 14.5px;
+    color: #64748b;
+    margin: 0 0 24px 0;
+    max-width: 680px;
+}
+
+/* Search & Filter Controls */
+.controls-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    position: relative;
+    flex: 1;
+    min-width: 280px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px 18px 12px 42px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-size: 14px;
+    font-family: inherit;
+    color: #0f172a;
+    transition: all 0.2s ease;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.search-box input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.btn-history-link {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-history-link:hover {
+    background: #1e293b;
+    color: #ffffff;
+}
+
+/* Filter Chips Bar with Color Accents */
+.filter-chips-bar {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 28px;
+}
+
+.chip-btn {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.chip-btn:hover, .chip-btn.active {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+/* Service Cards Grid */
+.service-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 22px;
+    margin-bottom: 36px;
+}
+
+.service-card-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+
+.service-card-item:hover {
+    transform: translateY(-4px);
+    border-color: #2563eb;
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.1);
+}
+
+.service-card-item.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(30%);
+}
+
+.card-media {
+    width: 100%;
+    height: 170px;
+    background: #f1f5f9;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.service-card-item:hover .card-media img {
+    transform: scale(1.05);
+}
+
+.status-badge-tag {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.badge-available {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #a7f3d0;
+}
+
+.badge-unavailable {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.rating-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(15, 23, 42, 0.85);
+    color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.card-body-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.card-service-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 10px 0;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 18px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.features-list li {
+    font-size: 12.5px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.features-list li svg {
+    color: #16a34a;
+    flex-shrink: 0;
+}
+
+.card-footer-row {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.price-text {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.price-text span {
+    font-size: 12px;
+    font-weight: 500;
+    color: #94a3b8;
+    display: block;
+}
+
+.btn-book-service {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.btn-book-service:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+/* Trust Bar with Colored Icon Backdrops */
+.trust-bar-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px 28px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+}
+
+.trust-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.trust-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.t-icon-blue { background: #eff6ff; color: #2563eb; }
+.t-icon-amber { background: #fff7ed; color: #d97706; }
+.t-icon-indigo { background: #f5f3ff; color: #7c3aed; }
+.t-icon-emerald { background: #ecfdf5; color: #059669; }
+
+.trust-info strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 2px;
+}
+
+.trust-info p {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.empty-state-card {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+}
+
+.empty-state-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+}
+
+.empty-state-card p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+@media (max-width: 900px) {
+    .trust-bar-box { grid-template-columns: repeat(2, 1fr); }
+    .service-cards-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+}
+
+@media (max-width: 600px) {
+    .page-header-card { padding: 24px 20px; }
+    .page-header-card h1 { font-size: 24px; }
+    .trust-bar-box { grid-template-columns: 1fr; }
+    .service-cards-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<div class="selection-container">
+
+    <!-- Header Section -->
+    <div class="page-header-card">
+        <div class="header-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Verified Service Network • Standardized Rates
+        </div>
+        <h1>Select a Service Category</h1>
+        <p>Choose from our certified home repair, maintenance, and installation services with instant technician dispatching.</p>
+
+        <div class="controls-row">
+            <div class="search-box">
+                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="serviceSearchInput" placeholder="Search services (e.g. AC Repair, Plumbing, Electrician)..." onkeyup="filterServices()">
+            </div>
+
+            <a href="{% url 'customer_my_requests' %}" class="btn-history-link">
+                My Bookings →
+            </a>
+        </div>
+    </div>
+
+    <!-- Category Filter Chips -->
+    <div class="filter-chips-bar">
+        <div class="chip-btn active" onclick="filterChip('all', this)">All Services</div>
+        <div class="chip-btn" onclick="filterChip('electrical', this)">Electrical</div>
+        <div class="chip-btn" onclick="filterChip('plumbing', this)">Plumbing</div>
+        <div class="chip-btn" onclick="filterChip('ac', this)">AC Repair</div>
+        <div class="chip-btn" onclick="filterChip('cleaning', this)">Cleaning</div>
+        <div class="chip-btn" onclick="filterChip('painting', this)">Painting</div>
+        <div class="chip-btn" onclick="filterChip('carpentry', this)">Carpentry</div>
+    </div>
+
+    <!-- Service Cards Grid -->
+    <div class="service-cards-grid" id="serviceGrid">
+
+        {% for service in services %}
+        <div 
+            class="service-card-item {% if not service.is_active %}disabled{% endif %}"
+            data-name="{{ service.name|lower }}"
+            {% if service.is_active %}
+            onclick="selectService('{{ service.name }}')"
+            {% endif %}
+        >
+            <div class="card-media">
+                {% if service.image %}
+                <img src="{{ service.image.url }}" alt="{{ service.name }}">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80" alt="{{ service.name }}">
+                {% endif %}
+
+                {% if service.is_active %}
+                <div class="status-badge-tag badge-available">
+                    <span style="width:6px; height:6px; background:#16a34a; border-radius:50%;"></span> Available
+                </div>
+                {% else %}
+                <div class="status-badge-tag badge-unavailable">
+                    Unavailable
+                </div>
+                {% endif %}
+
+                <div class="rating-tag">⭐ 4.9</div>
+            </div>
+
+            <div class="card-body-content">
+                <h3 class="card-service-title">{{ service.name }}</h3>
+
+                <ul class="features-list">
+                    <li>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        Certified &amp; Background Checked Tech
+                    </li>
+                    <li>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        30-Day Service Guarantee Included
+                    </li>
+                    <li>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        Transparent Upfront Pricing
+                    </li>
+                </ul>
+
+                <div class="card-footer-row">
+                    <div class="price-text">
+                        ₹{{ service.price }}
+                        <span>Standard Rate</span>
+                    </div>
+
+                    {% if service.is_active %}
+                    <button class="btn-book-service" onclick="event.stopPropagation(); selectService('{{ service.name }}')">
+                        Book Now →
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state-card">
+            <h3>No Services Currently Available</h3>
+            <p>Services will appear here once added by administration.</p>
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <!-- Executive Trust Bar -->
+    <div class="trust-bar-box">
+        <div class="trust-item">
+            <div class="trust-icon-box t-icon-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="trust-info">
+                <strong>Certified Technicians</strong>
+                <p>Background checked &amp; skilled professionals</p>
+            </div>
+        </div>
+        <div class="trust-item">
+            <div class="trust-icon-box t-icon-amber">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="trust-info">
+                <strong>Fixed Pricing</strong>
+                <p>No hidden fees or unexpected charges</p>
+            </div>
+        </div>
+        <div class="trust-item">
+            <div class="trust-icon-box t-icon-indigo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div class="trust-info">
+                <strong>Rapid Dispatch</strong>
+                <p>Fastest local technician allocation</p>
+            </div>
+        </div>
+        <div class="trust-item">
+            <div class="trust-icon-box t-icon-emerald">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </div>
+            <div class="trust-info">
+                <strong>30-Day Warranty</strong>
+                <p>Free follow-up service if required</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function selectService(serviceName) {
+    const baseUrl = "{% url 'customer_create_request' %}";
+    window.location.href = baseUrl + "?service=" + encodeURIComponent(serviceName);
+}
+
+function filterServices() {
+    const query = document.getElementById('serviceSearchInput').value.toLowerCase().trim();
+    const cards = document.querySelectorAll('.service-card-item');
+
+    cards.forEach(card => {
+        const name = card.getAttribute('data-name') || '';
+        if (name.includes(query)) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function filterChip(category, chipEl) {
+    document.querySelectorAll('.chip-btn').forEach(c => c.classList.remove('active'));
+    chipEl.classList.add('active');
+
+    const input = document.getElementById('serviceSearchInput');
+    if (category === 'all') {
+        input.value = '';
+    } else {
+        input.value = category;
+    }
+    filterServices();
+}
+</script>
+
+{% endblock %}

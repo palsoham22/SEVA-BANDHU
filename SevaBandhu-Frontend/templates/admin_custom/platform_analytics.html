@@ -1,0 +1,218 @@
+{% extends "admin_custom/base_admin.html" %}
+
+{% block content %}
+<style>
+    .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 40px; }
+    
+    .metric-card { 
+        padding: 24px; 
+        border-radius: 16px; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03); 
+        border: 1px solid rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+    }
+    
+    .metric-icon {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        opacity: 0.15;
+    }
+
+    .metric-title { color: #475569; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 700; z-index: 1;}
+    .metric-value { color: #0f172a; font-size: 32px; font-weight: 800; margin: 0; z-index: 1; letter-spacing: -0.03em;}
+    
+    /* Distinct Card Themes */
+    .card-blue { background: linear-gradient(145deg, #eff6ff 0%, #dbeafe 100%); border-left: 5px solid #3b82f6; }
+    .card-purple { background: linear-gradient(145deg, #f5f3ff 0%, #ede9fe 100%); border-left: 5px solid #8b5cf6; }
+    .card-pink { background: linear-gradient(145deg, #fdf2f8 0%, #fce7f3 100%); border-left: 5px solid #ec4899; }
+    .card-emerald { background: linear-gradient(145deg, #ecfdf5 0%, #d1fae5 100%); border-left: 5px solid #10b981; }
+    .card-amber { background: linear-gradient(145deg, #fffbeb 0%, #fef3c7 100%); border-left: 5px solid #f59e0b; }
+    .card-cyan { background: linear-gradient(145deg, #ecfeff 0%, #cffafe 100%); border-left: 5px solid #06b6d4; }
+    .card-green { background: linear-gradient(145deg, #f0fdf4 0%, #dcfce7 100%); border-left: 5px solid #22c55e; }
+    .card-slate { background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%); border-left: 5px solid #64748b; }
+    
+    .section-title { margin-top: 40px; margin-bottom: 24px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; font-size: 20px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif;}
+    .data-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0;}
+    .data-table th, .data-table td { padding: 16px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .data-table th { background: #f8fafc; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em;}
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #f8fafc; }
+</style>
+
+<div class="content-main">
+    <h1>Platform Analytics & Insights</h1>
+
+    <h2 class="section-title">ML RECOMMENDATION ENGINE</h2>
+    
+    <div class="analytics-grid">
+        <div class="metric-card card-blue">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <div class="metric-title">Customers Analyzed</div>
+            <div class="metric-value">{{ customers_analyzed }}</div>
+        </div>
+        <div class="metric-card card-purple">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <div class="metric-title">Interactions Evaluated</div>
+            <div class="metric-value">{{ interactions }}</div>
+        </div>
+        <div class="metric-card card-green">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div class="metric-title">Model Status</div>
+            <div class="metric-value" style="font-size: 18px; color: #15803d; line-height: 38px;">{{ model_status }}</div>
+            <div style="font-size: 11px; color:#166534; font-weight: 700; z-index: 1;">Trained: {{ last_trained }}</div>
+        </div>
+    </div>
+
+    <div class="analytics-grid">
+        <div class="metric-card card-cyan">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <div class="metric-title">Recs Generated</div>
+            <div class="metric-value">{{ recs_generated }}</div>
+        </div>
+        <div class="metric-card card-amber">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <div class="metric-title">Recs Shown</div>
+            <div class="metric-value">{{ recs_shown }}</div>
+        </div>
+        <div class="metric-card card-pink">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <div class="metric-title">Recs Clicked</div>
+            <div class="metric-value">{{ recs_clicked }}</div>
+        </div>
+        <div class="metric-card card-emerald">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <div class="metric-title">Recs Booked</div>
+            <div class="metric-value">{{ recs_booked }}</div>
+        </div>
+    </div>
+
+    <div class="analytics-grid">
+        <div class="metric-card card-purple">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <div class="metric-title">Click-Through Rate (CTR)</div>
+            <div class="metric-value">{{ ctr }}%</div>
+        </div>
+        <div class="metric-card card-blue">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div class="metric-title">Conversion Rate</div>
+            <div class="metric-value">{{ conversion_rate }}%</div>
+        </div>
+        <div class="metric-card card-slate">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <div class="metric-title">Avg Recommendation Score</div>
+            <div class="metric-value">{{ avg_score }}</div>
+        </div>
+    </div>
+
+    <h3 style="color:#1e293b; font-size:16px; margin-bottom:16px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif;">Top Recommended Services</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Service Name</th>
+                <th>Times Recommended</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in top_recs %}
+            <tr>
+                <td><strong>#{{ forloop.counter }}</strong></td>
+                <td style="font-weight: 600;">{{ item.service__name }}</td>
+                <td><span class="badge badge-info">{{ item.count }}</span></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="text-align: center; color: #94a3b8; padding: 32px;">No recommendations generated yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2 class="section-title" style="margin-top: 56px;">SMART OFFERS PERFORMANCE</h2>
+
+    <div class="analytics-grid">
+        <div class="metric-card card-blue">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            <div class="metric-title">Active Offers</div>
+            <div class="metric-value">{{ active_offers }} <span style="font-size:16px; color:#60a5fa;">/ {{ total_offers }}</span></div>
+        </div>
+        <div class="metric-card card-purple">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            <div class="metric-title">Offers Assigned</div>
+            <div class="metric-value">{{ offers_assigned }}</div>
+        </div>
+        <div class="metric-card card-amber">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <div class="metric-title">Offers Viewed</div>
+            <div class="metric-value">{{ offers_viewed }}</div>
+        </div>
+        <div class="metric-card card-emerald">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div class="metric-title">Offers Redeemed</div>
+            <div class="metric-value">{{ offers_redeemed }}</div>
+        </div>
+    </div>
+
+    <div class="analytics-grid">
+        <div class="metric-card card-pink">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <div class="metric-title">Global Redemption Rate</div>
+            <div class="metric-value">{{ overall_redemption_rate }}%</div>
+        </div>
+        <div class="metric-card card-cyan">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <div class="metric-title">Total Offer Bookings</div>
+            <div class="metric-value">{{ offer_bookings }}</div>
+        </div>
+        <div class="metric-card card-green">
+            <svg class="metric-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <div class="metric-title">Offer-Driven Revenue</div>
+            <div class="metric-value" style="color: #15803d;">₹{{ offer_revenue }}</div>
+        </div>
+    </div>
+
+    <h3 style="color:#1e293b; font-size:16px; margin-bottom:16px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif;">Individual Offer Diagnostics</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Offer Title</th>
+                <th>Promo Code</th>
+                <th>Assigned</th>
+                <th>Viewed</th>
+                <th>Redeemed</th>
+                <th>Redemption Rate</th>
+                <th>Bookings</th>
+                <th>Revenue Generated</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in individual_offers %}
+            <tr>
+                <td><strong>{{ item.title }}</strong></td>
+                <td><code style="background:#f1f5f9; color:#475569; font-weight:700; padding:6px 10px; border-radius:8px; border: 1px solid #e2e8f0; font-size:12px;">{{ item.code }}</code></td>
+                <td>{{ item.assigned }}</td>
+                <td>{{ item.viewed }}</td>
+                <td>{{ item.redeemed }}</td>
+                <td><span class="badge {% if item.redemption_rate > 20 %}badge-success{% else %}badge-info{% endif %}">{{ item.redemption_rate }}%</span></td>
+                <td>{{ item.bookings }}</td>
+                <td style="color:#15803d; font-weight:800;">₹{{ item.revenue }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" style="text-align: center; color: #94a3b8; padding: 32px;">No offers created yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

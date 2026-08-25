@@ -1,0 +1,97 @@
+{% extends 'admin_custom/base_admin.html' %}
+
+{% block content %}
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1>Technician Profile: {{ technician.username }}</h1>
+            <p style="color:#64748b; font-size:14px; margin:0;">Field experience, service category specialization, and job history.</p>
+        </div>
+        <a href="{% url 'admin_technicians_list' %}" class="btn btn-secondary">← Back to Directory</a>
+    </div>
+
+    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:28px; box-shadow:0 2px 8px rgba(15,23,42,0.02); margin-bottom:32px;">
+        <h2 style="font-family:'Plus Jakarta Sans', sans-serif; font-size:18px; font-weight:700; color:#0f172a; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">Technical Profile &amp; Qualifications</h2>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+            <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
+                <span style="display:block; font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Email Address</span>
+                <strong style="font-size:14px; color:#0f172a;">{{ technician.email }}</strong>
+            </div>
+
+            <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
+                <span style="display:block; font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Contact Phone</span>
+                <strong style="font-size:14px; color:#0f172a;">{{ technician.contact|default:"N/A" }}</strong>
+            </div>
+
+            <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
+                <span style="display:block; font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Speciality Category</span>
+                <strong style="font-size:14px; color:#2563eb;">{{ technician.service_category|default:"General Repair" }}</strong>
+            </div>
+
+            <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
+                <span style="display:block; font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Field Experience</span>
+                <strong style="font-size:14px; color:#0f172a;">{{ technician.years_of_experience|default:"0" }} Years</strong>
+            </div>
+
+            <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
+                <span style="display:block; font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Working Locations</span>
+                <strong style="font-size:14px; color:#0f172a;">{{ technician.working_locations|default:"All Areas" }}</strong>
+            </div>
+
+            <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
+                <span style="display:block; font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase; margin-bottom:4px;">Current Availability</span>
+                {% if technician.is_available %}<span class="badge badge-success">Available</span>{% else %}<span class="badge badge-warning">Busy</span>{% endif %}
+            </div>
+        </div>
+
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #f1f5f9; display:flex; justify-content:flex-end;">
+            <form method="POST" action="{% url 'admin_technician_deactivate' technician.id %}">
+                {% csrf_token %}
+                {% if technician.user.is_active %}
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Deactivate technician? They will not be able to log in or take new jobs.');">
+                        Deactivate Technician Account
+                    </button>
+                {% else %}
+                    <button type="submit" class="btn btn-success">
+                        Reactivate Technician Account
+                    </button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <h2 style="font-family:'Plus Jakarta Sans', sans-serif; font-size:18px; font-weight:700; color:#0f172a; margin-bottom:16px;">Assigned Service Dispatches</h2>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>Customer Name</th>
+                    <th>Job Status</th>
+                    <th>Dispatch Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td><strong style="color:#2563eb;">#REQ-{{ req.id }}</strong></td>
+                    <td><strong>{{ req.customer_username }}</strong></td>
+                    <td>
+                        {% if req.status == 'Completed' %}
+                            <span class="badge badge-success">Completed</span>
+                        {% elif req.status == 'Pending' %}
+                            <span class="badge badge-warning">Pending</span>
+                        {% else %}
+                            <span class="badge badge-info">{{ req.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:#64748b;">{{ req.created_at|date:"M d, Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:24px;">No assigned service requests found for this technician.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

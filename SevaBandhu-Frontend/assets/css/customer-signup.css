@@ -1,0 +1,249 @@
+
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+
+            font-family:'Inter',sans-serif;
+
+            min-height:100vh;
+
+            background:#f8fafc;
+
+            display:flex;
+            justify-content:center;
+            align-items:center;
+
+            padding:24px;
+        }
+
+        form{
+
+            width:100%;
+            max-width:460px;
+
+            background:white;
+
+            padding:38px;
+
+            border-radius:28px;
+
+            border:1px solid #e5e7eb;
+
+            box-shadow:0 10px 30px rgba(0,0,0,0.06);
+        }
+
+        h1{
+
+            color:#111827;
+
+            text-align:center;
+
+            font-size:32px;
+            font-weight:800;
+
+            margin-bottom:10px;
+
+            letter-spacing:-1px;
+        }
+
+        .subtitle{
+
+            text-align:center;
+
+            color:#6b7280;
+
+            font-size:15px;
+
+            line-height:1.6;
+
+            margin-bottom:30px;
+        }
+
+        label{
+
+            display:block;
+
+            margin-bottom:8px;
+
+            font-size:14px;
+            font-weight:600;
+
+            color:#374151;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"]{
+
+            width:100%;
+
+            padding:14px 16px;
+
+            border-radius:14px;
+
+            border:1px solid #d1d5db;
+
+            font-size:14px;
+
+            margin-bottom:20px;
+
+            background:white;
+
+            transition:0.25s ease;
+
+            font-family:'Inter',sans-serif;
+        }
+
+        input:focus{
+
+            outline:none;
+
+            border-color:#2563eb;
+
+            box-shadow:0 0 0 4px rgba(37,99,235,0.1);
+        }
+
+        button{
+
+            width:100%;
+
+            padding:14px;
+
+            border:none;
+
+            border-radius:14px;
+
+            font-size:14px;
+            font-weight:600;
+
+            cursor:pointer;
+
+            transition:0.25s ease;
+
+            font-family:'Inter',sans-serif;
+        }
+
+        .google-btn{
+
+            background:white;
+
+            color:#111827;
+
+            border:1px solid #e5e7eb;
+
+            box-shadow:0 4px 10px rgba(0,0,0,0.04);
+
+            margin-top:5px;
+            margin-bottom:14px;
+        }
+
+        .google-btn:hover{
+
+            background:#f9fafb;
+
+            transform:translateY(-1px);
+        }
+
+        .signup-btn{
+
+            background:#2563eb;
+
+            color:white;
+
+            box-shadow:0 6px 18px rgba(37,99,235,0.18);
+        }
+
+        .signup-btn:hover{
+
+            background:#1d4ed8;
+
+            transform:translateY(-1px);
+        }
+
+        .login-box{
+
+            margin-top:24px;
+
+            text-align:center;
+
+            padding:22px;
+
+            background:#f8fafc;
+
+            border-radius:18px;
+
+            border:1px solid #e5e7eb;
+        }
+
+        .login-box p{
+
+            margin-bottom:14px;
+
+            color:#6b7280;
+
+            font-size:14px;
+        }
+
+        .login-link{
+
+            display:inline-block;
+
+            width:100%;
+
+            padding:13px;
+
+            background:#111827;
+
+            color:white;
+
+            text-decoration:none;
+
+            border-radius:14px;
+
+            font-weight:600;
+
+            transition:0.25s ease;
+        }
+
+        .login-link:hover{
+
+            background:#1f2937;
+
+            transform:translateY(-1px);
+        }
+
+        .error-box{
+
+            background:#fef2f2;
+
+            border:1px solid #fecaca;
+
+            color:#b91c1c;
+
+            padding:14px;
+
+            border-radius:14px;
+
+            margin-bottom:22px;
+
+            font-size:14px;
+        }
+
+        @media(max-width:600px){
+
+            form{
+                padding:28px 22px;
+                border-radius:22px;
+            }
+
+            h1{
+                font-size:28px;
+            }
+        }
+
+    

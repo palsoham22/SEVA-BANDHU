@@ -1,0 +1,36 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.secret
+*.secrets
+*credentials*
+*credential*
+*secrets*
+*secret*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Python environments and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.log
+
+# Local application data
+*.sqlite3
+media/
+
+# Frontend dependencies and build output
+SevaBandhu-Frontend/node_modules/
+SevaBandhu-Frontend/dist/
+SevaBandhu-Frontend/build/
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

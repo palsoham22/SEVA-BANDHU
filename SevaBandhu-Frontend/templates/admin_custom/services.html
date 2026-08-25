@@ -1,0 +1,94 @@
+{% extends 'admin_custom/base_admin.html' %}
+
+{% block content %}
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1>Services Catalog Management</h1>
+            <p style="color:#64748b; font-size:14px; margin:0;">Manage pricing, active catalog visibility, and service media.</p>
+        </div>
+        <a href="{% url 'admin_service_add' %}" class="btn btn-primary">
+            + Add New Service
+        </a>
+    </div>
+
+    <form method="GET" class="search-bar">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search service name..." style="min-width:320px;" />
+        <button type="submit" class="btn btn-primary">Search Services</button>
+        {% if query %}
+            <a href="{% url 'admin_services_list' %}" class="btn btn-secondary">Clear Filter</a>
+        {% endif %}
+    </form>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Service Media</th>
+                    <th>Service Name</th>
+                    <th>Standard Price</th>
+                    <th>Visibility Status</th>
+                    <th>Manage Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in page_obj %}
+                <tr>
+                    <td>
+                        {% if service.image %}
+                            <img src="{{ service.image.url }}" alt="{{ service.name }}" style="width: 48px; height: 48px; object-fit: cover; border-radius: 10px; border: 1px solid #e2e8f0;">
+                        {% else %}
+                            <div style="width: 48px; height: 48px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #94a3b8; border: 1px solid #e2e8f0;">No Image</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong style="font-family:'Plus Jakarta Sans', sans-serif; font-size:15px; color:#0f172a;">{{ service.name }}</strong>
+                    </td>
+                    <td>
+                        <strong style="font-family:'Plus Jakarta Sans', sans-serif; font-size:16px; color:#2563eb;">₹{{ service.price }}</strong>
+                    </td>
+                    <td>
+                        {% if service.is_enabled %}
+                            <span class="badge badge-success">ACTIVE CATALOG</span>
+                        {% else %}
+                            <span class="badge badge-danger">DISABLED</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <a href="{% url 'admin_service_edit' service.id %}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12.5px;">Edit</a>
+
+                            <form method="POST" action="{% url 'admin_service_toggle' service.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                {% if service.is_enabled %}
+                                    <button type="submit" class="btn" style="padding: 6px 12px; font-size: 12.5px; background: #fff7ed; border: 1px solid #fed7aa; color: #c2410c; border-radius: 8px; font-weight: 700; cursor: pointer;">Disable</button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-success" style="padding: 6px 12px; font-size: 12.5px; border-radius: 8px; font-weight: 700; cursor: pointer;">Enable</button>
+                                {% endif %}
+                            </form>
+
+                            <form method="POST" action="{% url 'admin_service_delete' service.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 12.5px;" onclick="return confirm('Delete service? If historical records exist, it will be disabled safely.');">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:32px;">No services found in catalog.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Prev</a>
+        {% endif %}
+
+        <span class="active">{{ page_obj.number }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next</a>
+        {% endif %}
+    </div>
+{% endblock %}

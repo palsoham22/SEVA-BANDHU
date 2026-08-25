@@ -1,0 +1,175 @@
+{% extends 'admin_custom/base_admin.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h1 style="margin: 0;">Support Tickets</h1>
+</div>
+
+<div class="search-bar">
+    <form method="GET" style="display: flex; gap: 12px; width: 100%;">
+        <input type="text" name="q" placeholder="Search by customer or technician..." value="{{ query }}" style="flex-grow: 1; max-width: 400px;">
+        <select name="type">
+            <option value="">All Types</option>
+            <option value="Refund" {% if type_filter == 'Refund' %}selected{% endif %}>Refund</option>
+            <option value="Complaint" {% if type_filter == 'Complaint' %}selected{% endif %}>Complaint</option>
+        </select>
+        <select name="status">
+            <option value="">All Statuses</option>
+            <option value="Open" {% if status_filter == 'Open' %}selected{% endif %}>Open</option>
+            <option value="Resolved" {% if status_filter == 'Resolved' %}selected{% endif %}>Resolved</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Filter</button>
+        {% if query or type_filter or status_filter %}
+            <a href="{% url 'admin_support_tickets_list' %}" class="btn btn-secondary">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Customer</th>
+                <th>Request ID</th>
+                <th>Technician</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in page_obj %}
+            <tr>
+                <td>#{{ ticket.id }}</td>
+                <td>
+                    <span class="badge {% if ticket.ticket_type == 'Refund' %}badge-warning{% else %}badge-danger{% endif %}">
+                        {{ ticket.ticket_type }}
+                    </span>
+                </td>
+                <td>{{ ticket.customer.username }}<br><small style="color:#64748b;">{{ ticket.customer.email }}</small></td>
+                <td>
+                    {% if ticket.service_request_id %}
+                    <span style="font-family: ui-monospace, monospace; font-size: 12.5px; font-weight: 700; color: #2563eb; background: #eff6ff; border: 1px solid #bfdbfe; padding: 2px 6px; border-radius: 4px;">#{{ ticket.service_request_id }}</span>
+                    {% else %}
+                    <span style="color:#94a3b8;">-</span>
+                    {% endif %}
+                </td>
+                <td>{{ ticket.technician_name|default:"-" }}</td>
+                <td style="max-width: 250px; white-space: normal; font-size: 13px;">{{ ticket.description }}</td>
+                <td>
+                    <span class="badge {% if ticket.status == 'Resolved' %}badge-success{% else %}badge-info{% endif %}">
+                        {{ ticket.status }}
+                    </span>
+                </td>
+                <td style="font-size: 13px;">{{ ticket.created_at|date:"M d, Y h:i A" }}</td>
+                <td>
+                    {% if ticket.status == 'Open' %}
+                        <button type="button" data-ticket-id="{{ ticket.id }}" data-ticket-type="{{ ticket.ticket_type }}" class="btn btn-primary resolve-btn" style="padding: 6px 12px; font-size: 12px;">Resolve</button>
+                    {% else %}
+                        <div style="font-size:12px; color:#64748b; white-space:normal; max-width:200px;">
+                            <strong>Action:</strong> {{ ticket.action_taken|default:"Resolved" }}
+                        </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" style="text-align: center; padding: 40px; color: #64748b;">No support tickets found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">&laquo; Prev</a>
+    {% endif %}
+    
+    <span class="active">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Action Modal -->
+<div id="actionModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; padding:24px; border-radius:12px; width:100%; max-width:500px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);">
+        <h3 style="margin-top:0; margin-bottom:16px;">Resolve Ticket #<span id="modalTicketIdDisplay"></span></h3>
+        <form id="actionForm" method="POST" action="">
+            {% csrf_token %}
+            
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600; font-size:14px;">Resolution Type</label>
+                <select name="resolution_type" id="resolutionTypeSelect" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; background:#fff;">
+                    <!-- Options populated dynamically -->
+                </select>
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600; font-size:14px;">Refund Amount to Customer Wallet (₹) - Optional</label>
+                <input type="number" name="refund_amount" placeholder="0" min="0" step="0.01" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; background:#fff;">
+                <small style="color: #64748b; font-size: 12px; display: block; margin-top: 4px;">If entered, this amount will be added to the customer's Seva Bandhu Wallet instantly.</small>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600; font-size:14px;">Message to Customer / Internal Notes</label>
+                <textarea name="action_taken" required rows="4" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; resize:vertical;" placeholder="Write a message that will be visible to the customer..."></textarea>
+            </div>
+            
+            <div style="margin-bottom:24px; display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="sendEmail" name="send_email" style="width:16px; height:16px;">
+                <label for="sendEmail" style="font-size:14px;">Send automated email to customer with resolution details</label>
+            </div>
+            
+            <div style="display:flex; justify-content:flex-end; gap:12px;">
+                <button type="button" onclick="closeActionModal()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-success">Mark as Resolved</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openActionModal(id, type) {
+    document.getElementById('modalTicketIdDisplay').innerText = id;
+    document.getElementById('actionForm').action = '/super-admin/support-tickets/' + id + '/action/';
+    
+    const select = document.getElementById('resolutionTypeSelect');
+    const textarea = document.querySelector('textarea[name="action_taken"]');
+    
+    // Clear previous options
+    select.innerHTML = '';
+    
+    if (type === 'Refund') {
+        select.innerHTML += '<option value="Refund Approved & Processed">Approve & Refund to Wallet</option>';
+        select.innerHTML += '<option value="Refund Request Declined">Refund Rejected</option>';
+        textarea.placeholder = "Reason for rejection or additional notes... (Visible to customer)";
+    } else {
+        select.innerHTML += '<option value="Apology Issued">Send Apology Email</option>';
+        select.innerHTML += '<option value="Callback Scheduled">Request Callback</option>';
+        select.innerHTML += '<option value="Action Taken Against Technician">Issue Warning to Technician</option>';
+        textarea.placeholder = "Resolution message to customer (e.g. Sorry to hear that... a callback has been requested)";
+    }
+    
+    document.getElementById('actionModal').style.display = 'flex';
+}
+
+function closeActionModal() {
+    document.getElementById('actionModal').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.resolve-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            openActionModal(this.getAttribute('data-ticket-id'), this.getAttribute('data-ticket-type'));
+        });
+    });
+});
+</script>
+{% endblock %}

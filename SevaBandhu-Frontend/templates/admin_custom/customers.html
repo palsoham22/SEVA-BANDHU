@@ -1,0 +1,67 @@
+{% extends 'admin_custom/base_admin.html' %}
+
+{% block content %}
+    <h1>Customer Accounts Directory</h1>
+
+    <form method="GET" class="search-bar">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search username, email, contact..." style="min-width: 320px;" />
+        <button type="submit" class="btn btn-primary">Search Customers</button>
+        {% if query %}
+            <a href="{% url 'admin_customers_list' %}" class="btn btn-secondary">Clear Filter</a>
+        {% endif %}
+    </form>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Email Address</th>
+                    <th>Contact Phone</th>
+                    <th>Account Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in page_obj %}
+                <tr>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="width:34px; height:34px; border-radius:8px; background:#0f172a; color:#ffffff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center;">
+                                {{ customer.username|upper|first }}
+                            </span>
+                            <strong style="color:#0f172a;">{{ customer.username }}</strong>
+                        </div>
+                    </td>
+                    <td style="color:#64748b;">{{ customer.email }}</td>
+                    <td>{{ customer.contact|default:"N/A" }}</td>
+                    <td>
+                        {% if customer.user.is_active %}
+                            <span class="badge badge-success">Active</span>
+                        {% else %}
+                            <span class="badge badge-danger">Deactivated</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_customer_detail' customer.id %}" class="btn btn-secondary" style="padding: 6px 14px; font-size: 12.5px;">View Profile →</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:32px;">No customers found matching search criteria.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Prev</a>
+        {% endif %}
+
+        <span class="active">{{ page_obj.number }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next</a>
+        {% endif %}
+    </div>
+{% endblock %}

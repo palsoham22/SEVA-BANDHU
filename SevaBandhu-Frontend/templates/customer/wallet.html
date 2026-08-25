@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+/* =========================================================
+   Executive Customer Wallet UI
+========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+.wallet-container {
+    max-width: 900px;
+    margin: 40px auto 64px;
+    padding: 0 20px;
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+}
+
+.wallet-card {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    border-radius: 20px;
+    padding: 32px;
+    color: #ffffff;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.wallet-balance-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #bfdbfe;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.wallet-balance-info h1 {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+}
+
+.add-money-btn {
+    background: #ffffff;
+    color: #1e3a8a;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.add-money-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.transactions-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+}
+
+.transactions-panel h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    color: #0f172a;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 16px;
+}
+
+.tx-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.tx-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.tx-item:last-child {
+    border-bottom: none;
+}
+
+.tx-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.tx-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tx-icon.credit {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.tx-icon.debit {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.tx-details h4 {
+    margin: 0 0 4px 0;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.tx-details p {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.tx-amount {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.tx-amount.credit { color: #15803d; }
+.tx-amount.debit { color: #b91c1c; }
+
+/* Add Money Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-box {
+    background: #ffffff;
+    width: 90%;
+    max-width: 420px;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    transform: translateY(20px);
+    transition: transform 0.2s ease;
+}
+
+.modal-overlay.active .modal-box {
+    transform: translateY(0);
+}
+
+.modal-box h3 {
+    margin: 0 0 20px 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn-primary {
+    width: 100%;
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    width: 100%;
+    background: white;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+}
+</style>
+
+<div class="wallet-container">
+    <div style="margin-bottom: 24px;">
+        <a href="{% url 'customer_dashboard' %}" style="color: #64748b; text-decoration: none; font-size: 14px; font-weight: 600;">&larr; Back to Dashboard</a>
+    </div>
+
+    <!-- Wallet Card -->
+    <div class="wallet-card">
+        <div class="wallet-balance-info">
+            <p>Seva Bandhu Wallet Balance</p>
+            <h1>₹{{ customer.wallet_balance }}</h1>
+        </div>
+        <button class="add-money-btn" onclick="openModal()">+ Add Money</button>
+    </div>
+
+    <!-- Transactions Panel -->
+    <div class="transactions-panel">
+        <h3>Recent Transactions</h3>
+        
+        {% if transactions %}
+        <div class="tx-list">
+            {% for tx in transactions %}
+            <div class="tx-item">
+                <div class="tx-info">
+                    <div class="tx-icon {% if tx.transaction_type == 'CREDIT' %}credit{% else %}debit{% endif %}">
+                        {% if tx.transaction_type == 'CREDIT' %}
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+                        {% else %}
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
+                        {% endif %}
+                    </div>
+                    <div class="tx-details">
+                        <h4>{{ tx.description }}</h4>
+                        <p>{{ tx.created_at|date:"M d, Y h:i A" }}</p>
+                    </div>
+                </div>
+                <div class="tx-amount {% if tx.transaction_type == 'CREDIT' %}credit{% else %}debit{% endif %}">
+                    {% if tx.transaction_type == 'CREDIT' %}+{% else %}-{% endif %}₹{{ tx.amount }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 40px 0; color: #94a3b8; font-size: 14px;">
+            No transactions yet. Add money to get started!
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add Money Modal -->
+<div class="modal-overlay" id="addMoneyModal">
+    <div class="modal-box">
+        <h3>Add Money to Wallet</h3>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 24px;">Enter the amount you wish to add securely. (Test Environment)</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Amount (₹)</label>
+                <input type="number" name="amount" min="1" required placeholder="e.g. 1000">
+            </div>
+            <button type="submit" class="btn-primary">Proceed to Pay</button>
+            <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal() {
+        document.getElementById('addMoneyModal').classList.add('active');
+    }
+    
+    function closeModal() {
+        document.getElementById('addMoneyModal').classList.remove('active');
+    }
+</script>
+
+{% endblock %}

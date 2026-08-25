@@ -1,0 +1,148 @@
+
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+
+            min-height:100vh;
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
+
+            padding:24px;
+
+            font-family:'Inter',sans-serif;
+
+            background:#f8fafc;
+        }
+
+        main{
+
+            width:100%;
+            max-width:460px;
+
+            background:white;
+
+            padding:42px 36px;
+
+            border-radius:28px;
+
+            border:1px solid #e5e7eb;
+
+            box-shadow:0 10px 30px rgba(0,0,0,0.06);
+
+            text-align:center;
+        }
+
+        /* ===== Icon ===== */
+
+        .verify-icon{
+
+            width:90px;
+            height:90px;
+
+            margin:0 auto 24px;
+
+            border-radius:50%;
+
+            background:#eff6ff;
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
+
+            font-size:38px;
+        }
+
+        /* ===== Heading ===== */
+
+        h1{
+
+            color:#111827;
+
+            font-size:32px;
+            font-weight:800;
+
+            margin-bottom:12px;
+
+            letter-spacing:-1px;
+        }
+
+        /* ===== Subtitle ===== */
+
+        .subtitle{
+
+            color:#6b7280;
+
+            font-size:15px;
+
+            line-height:1.7;
+
+            margin-bottom:30px;
+        }
+
+        /* ===== User Box ===== */
+
+        .user-box{
+
+            background:#f8fafc;
+
+            border:1px solid #e5e7eb;
+
+            padding:20px;
+
+            border-radius:18px;
+
+            margin-top:10px;
+        }
+
+        /* ===== Loading Badge ===== */
+
+        .status-badge{
+
+            display:inline-flex;
+
+            align-items:center;
+            justify-content:center;
+
+            gap:8px;
+
+            background:#ecfdf5;
+
+            color:#166534;
+
+            padding:10px 16px;
+
+            border-radius:999px;
+
+            font-size:13px;
+            font-weight:700;
+
+            margin-bottom:24px;
+        }
+
+        /* ===== Responsive ===== */
+
+        @media(max-width:600px){
+
+            main{
+                padding:34px 24px;
+                border-radius:22px;
+            }
+
+            h1{
+                font-size:28px;
+            }
+
+            .subtitle{
+                font-size:14px;
+            }
+
+        }
+
+    
