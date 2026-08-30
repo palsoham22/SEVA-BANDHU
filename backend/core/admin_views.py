@@ -550,7 +550,7 @@ def admin_platform_analytics(request):
             'warning_count': t.warning_count,
             'is_available': t.is_available
         })
-    tech_performance.sort(key=lambda x: x['rating'], reverse=True)
+    tech_performance.sort(key=lambda x: (x['rating'] if x['rating'] is not None else -1.0), reverse=True)
 
     context = {
         'customers_analyzed': customers_analyzed,
@@ -576,6 +576,7 @@ def admin_platform_analytics(request):
         'offer_revenue': offer_revenue,
         'individual_offers': individual_offers,
         'tech_performance': tech_performance,
+        'services': Service.objects.all(),
     }
     return render(request, 'admin_custom/platform_analytics.html', context)
 

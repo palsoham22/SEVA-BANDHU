@@ -460,7 +460,11 @@
                 </div>
                 {% endif %}
 
-                <div class="rating-tag">⭐ 4.9</div>
+                {% if service.performance_stats.has_data %}
+                <div class="rating-tag">⭐ {{ service.performance_stats.rating }}</div>
+                {% else %}
+                <div class="rating-tag" style="background: #334155;">New Service</div>
+                {% endif %}
             </div>
 
             <div class="card-body-content">

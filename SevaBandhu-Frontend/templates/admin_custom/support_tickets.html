@@ -166,6 +166,7 @@ function openActionModal(id, type) {
         select.innerHTML += '<option value="Apology Issued">Send Apology Email</option>';
         select.innerHTML += '<option value="Callback Scheduled">Request Callback</option>';
         select.innerHTML += '<option value="Action Taken Against Technician">Issue Warning to Technician</option>';
+        select.innerHTML += '<option value="Complaint Rejected / Invalid">Complaint Rejected / Invalid (No Service Penalty)</option>';
         textarea.placeholder = "Resolution message to customer (e.g. Sorry to hear that... a callback has been requested)";
         document.getElementById('warningFields').style.display = 'block';
     }

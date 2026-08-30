@@ -237,6 +237,50 @@ class Service(models.Model):
      def __str__(self):
         return self.name
 
+     @property
+     def performance_stats(self):
+         from core.models import ServiceRequest, SupportTicket
+         
+         qualifying_bookings_qs = ServiceRequest.objects.filter(
+             service_detail__service_category=self.name,
+             status='Completed'
+         )
+         completed_bookings = qualifying_bookings_qs.count()
+         
+         if completed_bookings == 0:
+             return {
+                 "rating": None,
+                 "booking_count": 0,
+                 "validated_complaint_count": 0,
+                 "complaint_rate": 0.0,
+                 "has_data": False
+             }
+         
+         qualifying_booking_ids = list(qualifying_bookings_qs.values_list('id', flat=True))
+         str_booking_ids = [str(x) for x in qualifying_booking_ids]
+         
+         validated_complaints = SupportTicket.objects.filter(
+             ticket_type='Complaint',
+             status='Resolved',
+             service_request_id__in=str_booking_ids
+         ).exclude(action_taken__icontains='Rejected').count()
+         
+         C = 5.0
+         smoothed_complaint_rate = validated_complaints / (completed_bookings + C)
+         M = 15.0
+         penalty = smoothed_complaint_rate * M
+         
+         raw_rating = 5.0 - penalty
+         final_rating = round(max(1.0, min(5.0, raw_rating)), 1)
+         
+         return {
+             "rating": final_rating,
+             "booking_count": completed_bookings,
+             "validated_complaint_count": validated_complaints,
+             "complaint_rate": round(smoothed_complaint_rate, 4),
+             "has_data": True
+         }
+
 class TechnicianNotification(models.Model):
 
     technician = models.ForeignKey(

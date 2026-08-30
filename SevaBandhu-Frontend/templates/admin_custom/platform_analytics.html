@@ -215,6 +215,56 @@
         </tbody>
     </table>
 
+    <h2 class="section-title" style="margin-top: 56px;">SERVICE PERFORMANCE TRACKER</h2>
+    <h3 style="color:#1e293b; font-size:16px; margin-bottom:16px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif;">Dynamic Service Ratings & Complaint Rates</h3>
+    
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Service Category</th>
+                <th>Completed Bookings</th>
+                <th>Validated Complaints</th>
+                <th>Complaint Rate</th>
+                <th>Calculated Rating</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for srv in services %}
+            <tr>
+                <td><strong>{{ srv.name }}</strong></td>
+                <td>{{ srv.performance_stats.booking_count }}</td>
+                <td>
+                    {% if srv.performance_stats.validated_complaint_count > 0 %}
+                    <span style="color:#b91c1c; font-weight:600;">{{ srv.performance_stats.validated_complaint_count }}</span>
+                    {% else %}
+                    <span style="color:#64748b;">0</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if srv.performance_stats.has_data %}
+                    <span class="badge {% if srv.performance_stats.complaint_rate > 0.05 %}badge-info{% else %}badge-success{% endif %}">
+                        {{ srv.performance_stats.complaint_rate|floatformat:4 }}
+                    </span>
+                    {% else %}
+                    <span style="color:#94a3b8; font-size:13px;">N/A</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if srv.performance_stats.has_data %}
+                    <span style="font-weight: 800; color: #15803d; font-size:16px;">⭐ {{ srv.performance_stats.rating }}</span>
+                    {% else %}
+                    <span style="color:#94a3b8; font-size:13px;">No data yet</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: #94a3b8; padding: 32px;">No services found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
     <h2 class="section-title" style="margin-top: 56px;">TECHNICIAN PERFORMANCE TRACKER</h2>
     <h3 style="color:#1e293b; font-size:16px; margin-bottom:16px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif;">Live Rating & Warning Report</h3>
     
