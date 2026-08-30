@@ -102,9 +102,13 @@ def technician_dashboard(request):
     completed_jobs = assigned_jobs.filter(status='Completed').count()
     # 🔔 Pending notifications
     notifications = TechnicianNotification.objects.filter(
-    technician=technician,
-    is_read=False
-)
+        technician=technician,
+        is_read=False
+    )
+    
+    from core.models import TechnicianWarning
+    warnings_list = TechnicianWarning.objects.filter(technician=technician).order_by('-created_at')
+
     context = {
         'technician': technician,
         'assigned_jobs': assigned_jobs,
@@ -112,7 +116,8 @@ def technician_dashboard(request):
         'pending_jobs': assigned_jobs_count,
         'in_progress_jobs': in_progress_jobs,
         'completed_jobs': completed_jobs,
-        'notifications': notifications
+        'notifications': notifications,
+        'warnings_list': warnings_list,
     }
     
     return render(request, 'technician/dashboard_t.html', context)
@@ -791,10 +796,19 @@ def customer_my_requests(request):
                 technician = Technician_signup.objects.get(username=req.technician_username)
             except Technician_signup.DoesNotExist:
                 technician = None
+        
+        rating = None
+        if req.status == 'Completed':
+            try:
+                rating = req.rating_record
+            except Exception:
+                rating = None
+
         # Create a dict with request and technician data
         requests_with_technician.append({
             'request': req,
             'technician': technician,
+            'rating': rating,
         })
     
     context = {
@@ -1752,3 +1766,74 @@ def apply_coupon(request):
             
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+def customer_rate_technician(request, request_id):
+    if not request.user.is_authenticated:
+        return redirect('customer_login')
+    
+    from django.contrib import messages
+    from core.models import TechnicianRating
+    
+    customer = get_object_or_404(customer_signup, user=request.user)
+    service_request = get_object_or_404(ServiceRequest, id=request_id, customer_username=customer.username, status='Completed')
+    technician = get_object_or_404(Technician_signup, username=service_request.technician_username)
+    
+    # Check if already rated safely
+    try:
+        existing = service_request.rating_record
+        if existing:
+            messages.error(request, 'You have already rated this technician for this service.')
+            return redirect('customer_my_requests')
+    except Exception:
+        pass
+        
+    if request.method == "POST":
+        rating_val = request.POST.get('rating')
+        try:
+            rating_val = int(rating_val)
+            if 1 <= rating_val <= 5:
+                TechnicianRating.objects.create(
+                    customer=customer,
+                    technician=technician,
+                    service_request=service_request,
+                    rating=rating_val
+                )
+                messages.success(request, f'Thank you! You rated {technician.username} {rating_val} stars.')
+                return redirect('customer_my_requests')
+        except Exception:
+            pass
+        messages.error(request, 'Invalid rating submitted.')
+        
+    return render(request, 'customer/rate_technician.html', {
+        'service_request': service_request,
+        'technician': technician
+    })
+
+def customer_report_issue(request, request_id):
+    if not request.user.is_authenticated:
+        return redirect('customer_login')
+        
+    from django.contrib import messages
+    from core.models import SupportTicket
+    
+    customer = get_object_or_404(customer_signup, user=request.user)
+    service_request = get_object_or_404(ServiceRequest, id=request_id, customer_username=customer.username)
+    
+    if request.method == "POST":
+        description = request.POST.get('description', '')
+        category = request.POST.get('category', 'Other')
+        
+        SupportTicket.objects.create(
+            customer=customer,
+            ticket_type='Complaint',
+            service_request_id=str(service_request.id),
+            technician_name=service_request.technician_username or 'Unassigned',
+            description=f"[{category}] {description}"
+        )
+        messages.success(request, 'Your issue has been reported. Our team will review it shortly.')
+        return redirect('customer_support_tickets')
+        
+    return render(request, 'customer/report_issue.html', {
+        'service_request': service_request,
+        'technician_name': service_request.technician_username
+    })

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; padding: 30px; background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; font-family: sans-serif;">
+    <h2 style="margin-top: 0; color: #0f172a;">Rate Your Technician</h2>
+    <p style="color: #64748b; margin-bottom: 30px;">How was the service provided by <strong>{{ technician.username }}</strong>?</p>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
+            {% for i in "12345" %}
+            <label style="cursor: pointer;">
+                <input type="radio" name="rating" value="{{ i }}" required style="display:none;" onchange="updateStars(this.value)">
+                <span id="star-{{ i }}" style="font-size: 40px; color: #cbd5e1;">★</span>
+            </label>
+            {% endfor %}
+        </div>
+        
+        <div style="display: flex; justify-content: center; gap: 15px;">
+            <a href="{% url 'customer_my_requests' %}" style="padding: 12px 24px; text-decoration: none; border-radius: 8px; color: #334155; border: 1px solid #cbd5e1;">Cancel</a>
+            <button type="submit" style="padding: 12px 24px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Submit Rating</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function updateStars(val) {
+    for(let i = 1; i <= 5; i++) {
+        document.getElementById('star-' + i).style.color = i <= val ? '#fbbf24' : '#cbd5e1';
+    }
+}
+</script>
+{% endblock %}

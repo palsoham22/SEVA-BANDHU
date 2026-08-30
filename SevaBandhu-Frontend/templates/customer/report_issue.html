@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; padding: 30px; background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); font-family: sans-serif;">
+    <h2 style="margin-top: 0; color: #0f172a; text-align: center;">Report an Issue</h2>
+    <p style="color: #64748b; margin-bottom: 25px; text-align: center;">
+        Booking #REQ-{{ service_request.id }} <br>
+        Technician: {{ technician_name|default:"Unassigned" }}
+    </p>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #334155;">Issue Category</label>
+            <select name="category" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px;">
+                <option value="" disabled selected>Select an issue...</option>
+                <option value="Late arrival">Late arrival</option>
+                <option value="Poor service">Poor service</option>
+                <option value="Technician behaviour">Technician behaviour</option>
+                <option value="Property damage">Property damage</option>
+                <option value="Payment/service dispute">Payment/service dispute</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #334155;">Description</label>
+            <textarea name="description" rows="5" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; resize: vertical;" placeholder="Please describe the issue in detail..."></textarea>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between;">
+            <a href="{% url 'customer_my_requests' %}" style="padding: 12px 24px; text-decoration: none; border-radius: 8px; color: #334155; border: 1px solid #cbd5e1;">Cancel</a>
+            <button type="submit" style="padding: 12px 24px; background: #b91c1c; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Submit Complaint</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

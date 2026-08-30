@@ -122,6 +122,17 @@
                 <textarea name="action_taken" required rows="4" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; resize:vertical;" placeholder="Write a message that will be visible to the customer..."></textarea>
             </div>
             
+            <div id="warningFields" style="display:none; margin-bottom:16px; padding: 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom: 8px;">
+                    <input type="checkbox" id="issueWarning" name="issue_warning" style="width:16px; height:16px;" onchange="document.getElementById('penaltyContainer').style.display = this.checked ? 'block' : 'none';">
+                    <label for="issueWarning" style="font-weight:600; color:#b91c1c; font-size:14px;">Issue Official Warning & Penalty to Technician</label>
+                </div>
+                <div id="penaltyContainer" style="display:none; margin-left: 24px;">
+                    <label style="display:block; margin-bottom:4px; font-weight:600; font-size:13px; color:#b91c1c;">Penalty Points (Deducted from rating)</label>
+                    <input type="number" name="penalty_points" value="1.0" min="0.1" max="5.0" step="0.1" style="width:100px; padding:6px; border:1px solid #fca5a5; border-radius:6px; background:#fff;">
+                </div>
+            </div>
+
             <div style="margin-bottom:24px; display:flex; align-items:center; gap:8px;">
                 <input type="checkbox" id="sendEmail" name="send_email" style="width:16px; height:16px;">
                 <label for="sendEmail" style="font-size:14px;">Send automated email to customer with resolution details</label>
@@ -150,12 +161,18 @@ function openActionModal(id, type) {
         select.innerHTML += '<option value="Refund Approved & Processed">Approve & Refund to Wallet</option>';
         select.innerHTML += '<option value="Refund Request Declined">Refund Rejected</option>';
         textarea.placeholder = "Reason for rejection or additional notes... (Visible to customer)";
+        document.getElementById('warningFields').style.display = 'none';
     } else {
         select.innerHTML += '<option value="Apology Issued">Send Apology Email</option>';
         select.innerHTML += '<option value="Callback Scheduled">Request Callback</option>';
         select.innerHTML += '<option value="Action Taken Against Technician">Issue Warning to Technician</option>';
         textarea.placeholder = "Resolution message to customer (e.g. Sorry to hear that... a callback has been requested)";
+        document.getElementById('warningFields').style.display = 'block';
     }
+    
+    // Reset warning state
+    document.getElementById('issueWarning').checked = false;
+    document.getElementById('penaltyContainer').style.display = 'none';
     
     document.getElementById('actionModal').style.display = 'flex';
 }

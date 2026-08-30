@@ -368,6 +368,34 @@ def admin_support_ticket_action(request, id):
         refund_html = ""
         resolution_html = ""
 
+        issue_warning = request.POST.get('issue_warning') == 'on'
+        penalty_points_str = request.POST.get('penalty_points', '1.0')
+        
+        if issue_warning:
+            try:
+                from decimal import Decimal
+                from core.models import TechnicianWarning, Technician_signup, ServiceRequest
+                penalty_points = Decimal(penalty_points_str)
+                tech_name = ticket.technician_name
+                technician = Technician_signup.objects.filter(username=tech_name).first()
+                if technician:
+                    if not hasattr(ticket, 'technicianwarning'):
+                        svc_req = None
+                        if ticket.service_request_id:
+                            svc_req = ServiceRequest.objects.filter(id=ticket.service_request_id).first()
+                            
+                        TechnicianWarning.objects.create(
+                            technician=technician,
+                            support_ticket=ticket,
+                            service_request=svc_req,
+                            penalty_points=penalty_points,
+                            reason=action_notes
+                        )
+                        resolution_type = 'Warning Issued'
+                        action_notes = f"[Penalty: -{penalty_points} points] " + action_notes
+            except Exception as e:
+                print("Error issuing warning:", e)
+
         if resolution_type:
             resolution_html = f'<p style="margin: 0 0 8px 0; font-size: 14px; color: #1e293b;"><strong>Status:</strong> {resolution_type}</p>'
 
@@ -509,6 +537,21 @@ def admin_platform_analytics(request):
             'revenue': rev
         })
 
+    from core.models import Technician_signup
+    techs = Technician_signup.objects.all()
+    tech_performance = []
+    for t in techs:
+        # Sort or filter if needed
+        tech_performance.append({
+            'username': t.username,
+            'service_category': t.service_category,
+            'rating': t.average_rating,
+            'rating_count': t.rating_count,
+            'warning_count': t.warning_count,
+            'is_available': t.is_available
+        })
+    tech_performance.sort(key=lambda x: x['rating'], reverse=True)
+
     context = {
         'customers_analyzed': customers_analyzed,
         'interactions': interactions,
@@ -532,6 +575,7 @@ def admin_platform_analytics(request):
         'offer_bookings': offer_bookings,
         'offer_revenue': offer_revenue,
         'individual_offers': individual_offers,
+        'tech_performance': tech_performance,
     }
     return render(request, 'admin_custom/platform_analytics.html', context)
 

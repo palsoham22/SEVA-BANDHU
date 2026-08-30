@@ -214,5 +214,57 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <h2 class="section-title" style="margin-top: 56px;">TECHNICIAN PERFORMANCE TRACKER</h2>
+    <h3 style="color:#1e293b; font-size:16px; margin-bottom:16px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif;">Live Rating & Warning Report</h3>
+    
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Technician Name</th>
+                <th>Category</th>
+                <th>Overall Rating</th>
+                <th>Reviews</th>
+                <th>Warnings / Complaints</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tech in tech_performance %}
+            <tr>
+                <td><strong>{{ tech.username }}</strong></td>
+                <td><span style="background:#f1f5f9; color:#475569; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600;">{{ tech.service_category }}</span></td>
+                <td>
+                    {% if tech.rating >= 4.0 %}
+                    <span style="font-weight: 800; color: #15803d; font-size:16px;">⭐ {{ tech.rating }}</span>
+                    {% elif tech.rating >= 3.0 %}
+                    <span style="font-weight: 800; color: #b45309; font-size:16px;">⭐ {{ tech.rating }}</span>
+                    {% else %}
+                    <span style="font-weight: 800; color: #b91c1c; font-size:16px;">⭐ {{ tech.rating }}</span>
+                    {% endif %}
+                </td>
+                <td style="color:#64748b;">{{ tech.rating_count }}</td>
+                <td>
+                    {% if tech.warning_count > 0 %}
+                    <span style="background:#fef2f2; color:#b91c1c; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:700; border:1px solid #fecaca;">⚠️ {{ tech.warning_count }} Warnings</span>
+                    {% else %}
+                    <span style="color:#94a3b8; font-size:13px;">No warnings</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if tech.is_available %}
+                    <span style="color:#15803d; font-size:12px; font-weight:700;">● Online</span>
+                    {% else %}
+                    <span style="color:#94a3b8; font-size:12px; font-weight:700;">● Offline / Busy</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 32px;">No technicians found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

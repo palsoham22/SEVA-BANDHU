@@ -72,6 +72,57 @@ class Technician_signup(models.Model):
     def __str__(self):
         return self.username
 
+    @property
+    def average_rating(self):
+        from django.db.models import Avg, Sum
+        ratings = self.ratings.all()
+        if not ratings.exists():
+            return None
+        
+        raw_avg = ratings.aggregate(Avg('rating'))['rating__avg'] or 0.0
+        warnings = self.warnings.aggregate(Sum('penalty_points'))['penalty_points__sum'] or 0.0
+        
+        final_rating = float(raw_avg) - float(warnings)
+        return round(max(0.0, min(5.0, final_rating)), 1)
+
+    @property
+    def rating_count(self):
+        return self.ratings.count()
+
+    @property
+    def warning_count(self):
+        return self.warnings.count()
+
+
+class TechnicianRating(models.Model):
+    customer = models.ForeignKey(customer_signup, on_delete=models.CASCADE)
+    technician = models.ForeignKey(Technician_signup, on_delete=models.CASCADE, related_name='ratings')
+    service_request = models.OneToOneField('ServiceRequest', on_delete=models.CASCADE, related_name='rating_record')
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'TechnicianRating'
+        unique_together = ('customer', 'service_request')
+
+    def __str__(self):
+        return f"{self.rating} Stars for {self.technician.username} by {self.customer.username}"
+
+
+class TechnicianWarning(models.Model):
+    technician = models.ForeignKey(Technician_signup, on_delete=models.CASCADE, related_name='warnings')
+    support_ticket = models.OneToOneField('SupportTicket', on_delete=models.CASCADE)
+    service_request = models.ForeignKey('ServiceRequest', on_delete=models.CASCADE, null=True, blank=True)
+    penalty_points = models.DecimalField(max_digits=3, decimal_places=1, default=1.0)
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'TechnicianWarning'
+
+    def __str__(self):
+        return f"Warning for {self.technician.username} (-{self.penalty_points} pts)"
+
 
 class ServiceAddress(models.Model):
     house_flat_no = models.CharField(max_length=50)

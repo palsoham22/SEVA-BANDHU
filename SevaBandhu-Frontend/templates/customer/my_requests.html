@@ -508,6 +508,21 @@
                         PDF Invoice
                     </a>
                     {% endif %}
+
+                    {% if request.status == 'Completed' and technician %}
+                        {% if not item.rating %}
+                        <a href="{% url 'customer_rate_technician' request.id %}" class="btn-card-action btn-action-blue">
+                            ⭐ Rate Technician
+                        </a>
+                        {% else %}
+                        <span class="btn-card-action btn-action-gray" style="cursor:default;">
+                            ⭐ {{ item.rating.rating }} / 5 Rated
+                        </span>
+                        {% endif %}
+                        <a href="{% url 'customer_report_issue' request.id %}" class="btn-card-action btn-action-gray">
+                            Report an Issue
+                        </a>
+                    {% endif %}
                 </div>
             </div>
 
