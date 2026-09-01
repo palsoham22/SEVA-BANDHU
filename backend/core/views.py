@@ -187,6 +187,15 @@ def technician_update_status(request):
 
                 technician.is_available = True
                 technician.save()
+                
+                # [FIRE] CLOSE CHAT
+                from core.models import ChatConversation
+                from django.utils import timezone
+                chat, created = ChatConversation.objects.get_or_create(service_request=job)
+                chat.is_active = False
+                chat.closed_at = timezone.now()
+                chat.save()
+
                 print("[ICON] Technician is now AVAILABLE")
 
             elif new_status == "In Progress":
@@ -1133,6 +1142,10 @@ def accept_request(request, id):
         service_request.status = 'Assigned'
         service_request.save()
 
+        # [FIRE] CREATE CHAT
+        from core.models import ChatConversation
+        ChatConversation.objects.get_or_create(service_request=service_request)
+
         # 🔒 mark busy (optional if you keep global flag)
         technician.is_available = False
         technician.save()
@@ -1836,4 +1849,63 @@ def customer_report_issue(request, request_id):
     return render(request, 'customer/report_issue.html', {
         'service_request': service_request,
         'technician_name': service_request.technician_username
+    })
+
+# ==========================================
+# REAL-TIME CHAT VIEWS
+# ==========================================
+def customer_chat(request, request_id):
+    if not request.user.is_authenticated:
+        return redirect('customer_login')
+
+    try:
+        customer = customer_signup.objects.filter(user=request.user).first()
+        if not customer:
+            return redirect('customer_login')
+    except customer_signup.DoesNotExist:
+        return redirect('customer_login')
+
+    service_request = get_object_or_404(
+        ServiceRequest,
+        id=request_id,
+        customer_username=customer.username
+    )
+
+    from core.models import ChatConversation
+    conversation = ChatConversation.objects.filter(service_request=service_request).first()
+    messages = conversation.messages.all() if conversation else []
+
+    return render(request, 'customer/chat.html', {
+        'service_request': service_request,
+        'chat_messages': messages,
+        'conversation': conversation,
+        'customer': customer,
+        'current_user_username': request.user.username
+    })
+
+def technician_chat(request, request_id):
+    if not request.user.is_authenticated:
+        return redirect('technician_login')
+
+    try:
+        technician = Technician_signup.objects.get(user=request.user)
+    except Technician_signup.DoesNotExist:
+        return redirect('technician_login')
+
+    service_request = get_object_or_404(
+        ServiceRequest,
+        id=request_id,
+        technician_username=technician.username
+    )
+
+    from core.models import ChatConversation
+    conversation = ChatConversation.objects.filter(service_request=service_request).first()
+    messages = conversation.messages.all() if conversation else []
+
+    return render(request, 'technician/chat.html', {
+        'service_request': service_request,
+        'chat_messages': messages,
+        'conversation': conversation,
+        'technician': technician,
+        'current_user_username': request.user.username
     })

@@ -496,6 +496,13 @@
                         Track Technician
                     </a>
                     {% endif %}
+                    
+                    {% if request.status != 'Pending' %}
+                    <a href="{% url 'customer_chat' request.id %}" class="btn-card-action btn-action-blue">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Chat with Technician
+                    </a>
+                    {% endif %}
 
                     {% if request.payment_method == 'online' and request.payment_status == 'pending' %}
                     <a href="{% url 'payment_page' request.id %}" class="btn-card-action btn-action-blue">

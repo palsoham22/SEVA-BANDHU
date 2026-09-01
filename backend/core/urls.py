@@ -1,3 +1,4 @@
+# Trigger reload
 from django.urls import path
 from . import views
 from . import admin_views
@@ -24,8 +25,8 @@ urlpatterns = [
     path('technician/complete_profile/', views.technician_complete_profile, name='technician_complete_profile'),
     path('technician/api/notifications/', views.technician_api_notifications, name='technician_api_notifications'),
     path('technician/dismiss-notification/<int:id>/',views.dismiss_notification,name='dismiss_notification'),
-    path('technician/navigation/<int:id>/',views.technician_navigation,name='technician_navigation'
-),
+    path('technician/navigation/<int:id>/',views.technician_navigation,name='technician_navigation'),
+    path('technician/chat/<int:request_id>/', views.technician_chat, name='technician_chat'),
 
     # Customer
     path('customer/dashboard/', views.customer_dashboard, name='customer_dashboard'),
@@ -46,6 +47,7 @@ urlpatterns = [
     path('customer/service-selection/', views.service_selection, name='service_selection'),
     path('technician/start-tracking/<int:id>/', views.start_tracking, name='start_tracking'),
     path('customer/tracking/<int:id>/', views.customer_tracking, name='customer_tracking'),
+    path('customer/chat/<int:request_id>/', views.customer_chat, name='customer_chat'),
     path('customer/google-auth/',views.customer_google_auth,name='customer_google_auth'),
     path( 'verify-email/<str:token>/', views.verify_email,name='verify_email'),
    path('send-verification-email/',views.send_verification_email,name='send_verification_email'),

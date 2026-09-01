@@ -483,3 +483,28 @@ class ReferralLog(models.Model):
 
     def __str__(self):
         return f"{self.referrer.username} referred {self.referee.username} (+₹{self.reward_amount})"
+
+class ChatConversation(models.Model):
+    service_request = models.OneToOneField(ServiceRequest, on_delete=models.CASCADE, related_name='chat_conversation')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'ChatConversation'
+
+    def __str__(self):
+        return f"Chat for REQ-{self.service_request.id}"
+
+class ChatMessage(models.Model):
+    conversation = models.ForeignKey(ChatConversation, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'ChatMessage'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Msg by {self.sender.username} at {self.created_at}"
