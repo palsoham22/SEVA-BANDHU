@@ -129,6 +129,18 @@
     font-weight: 600;
 }
 
+/* Bike Marker Styling */
+.bike-marker-icon {
+    background: #ffffff;
+    border: 2px solid #2563eb;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
 @media (max-width: 768px) {
     #map { height: 420px; }
     .journey-overlay-badge { font-size: 13.5px; top: 12px; left: 12px; padding: 10px 14px; }
@@ -190,10 +202,11 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19
 }).addTo(map);
 
-const technicianIcon = L.icon({
-    iconUrl: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
-    iconSize: [40, 40],
-    iconAnchor: [20, 20]
+const technicianIcon = L.divIcon({
+    className: 'bike-marker-icon',
+    html: '🛵',
+    iconSize: [42, 42],
+    iconAnchor: [21, 21]
 });
 
 let technicianMarker = null;
@@ -246,14 +259,34 @@ socket.onmessage = function(event) {
                     const distance = (route.summary.totalDistance / 1000).toFixed(2);
                     const time = Math.round(route.summary.totalTime / 60);
 
-                    document.getElementById('journey-info').innerHTML = 
-                        `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> <span><strong>${time} mins away</strong> • ${distance} km distance remaining</span>`;
+                    // The routing callback fires after every reroute; use the
+                    // marker's latest coordinate rather than the first GPS fix.
+                    let distToCustomer = map.distance(technicianMarker.getLatLng(), L.latLng(customerLat, customerLng));
+                    if (distToCustomer <= 70) {
+                        const badge = document.getElementById('journey-info');
+                        badge.innerHTML = '📍 Technician has arrived at your location!';
+                        badge.style.background = '#dcfce7';
+                        badge.style.color = '#15803d';
+                        badge.style.borderColor = '#86efac';
+                    } else {
+                        document.getElementById('journey-info').innerHTML = 
+                            `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> <span><strong>${time} mins away</strong> • ${distance} km distance remaining</span>`;
+                    }
                 });
             } else {
-                routeControl.setWaypoints([
-                    L.latLng(lat, lng),
-                    L.latLng(customerLat, customerLng)
-                ]);
+                let distToCustomer = map.distance(L.latLng(lat, lng), L.latLng(customerLat, customerLng));
+                if (distToCustomer <= 70) {
+                    const badge = document.getElementById('journey-info');
+                    badge.innerHTML = '📍 Technician has arrived at your location!';
+                    badge.style.background = '#dcfce7';
+                    badge.style.color = '#15803d';
+                    badge.style.borderColor = '#86efac';
+                } else {
+                    routeControl.setWaypoints([
+                        L.latLng(lat, lng),
+                        L.latLng(customerLat, customerLng)
+                    ]);
+                }
             }
             
             map.panTo([lat, lng]);
@@ -264,7 +297,7 @@ socket.onmessage = function(event) {
 };
 
 socket.onerror = function(error) {
-    console.error("Socket error:", error);
+    // onclose switches the UI to the HTTP location fallback.
 };
 
 socket.onclose = function() {
@@ -272,6 +305,30 @@ socket.onclose = function() {
     document.getElementById('tracking-status').style.background = '#fee2e2';
     document.getElementById('tracking-status').style.color = '#b91c1c';
 };
+
+// WebSocket upgrades can be blocked by a proxy or by a WSGI-only dev server.
+// Keep the customer map and ETA working through the authenticated HTTP fallback.
+const locationFallbackUrl = '{% url "customer_tracking_location" service_request.id %}';
+async function refreshLocationFallback() {
+    try {
+        const response = await fetch(locationFallbackUrl, { credentials: 'same-origin' });
+        if (!response.ok) return;
+        const location = await response.json();
+        if (location.latitude === null || location.longitude === null) return;
+        socket.onmessage({ data: JSON.stringify({
+            type: 'location_update', latitude: location.latitude, longitude: location.longitude
+        }) });
+        if (socket.readyState !== WebSocket.OPEN) {
+            document.getElementById('tracking-status').innerHTML = '<span style="width:7px; height:7px; background:#16a34a; border-radius:50%;"></span> Live location via backup connection';
+            document.getElementById('tracking-status').style.background = '#dcfce7';
+            document.getElementById('tracking-status').style.color = '#15803d';
+        }
+    } catch (_) {
+        // The map remains usable with its last valid coordinate.
+    }
+}
+refreshLocationFallback();
+setInterval(refreshLocationFallback, 5000);
 </script>
 
 {% endblock %}

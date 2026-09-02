@@ -1210,6 +1210,55 @@ def customer_tracking(request, id):
     return render(request, 'customer/tracking.html', {
         'service_request': service_request
     })
+
+
+def customer_tracking_location(request, id):
+    """Return the latest technician coordinate for the map's HTTP fallback."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'detail': 'Authentication required.'}, status=401)
+
+    customer = customer_signup.objects.filter(user=request.user).first()
+    service_request = get_object_or_404(
+        ServiceRequest,
+        id=id,
+        customer_username=customer.username if customer else '',
+    )
+    return JsonResponse({
+        'latitude': service_request.technician_latitude,
+        'longitude': service_request.technician_longitude,
+        'updated_at': service_request.technician_location_updated_at.isoformat()
+        if service_request.technician_location_updated_at else None,
+    })
+
+
+def technician_tracking_location(request, id):
+    """HTTP GPS fallback for environments where WebSocket upgrades are blocked."""
+    if request.method != 'POST' or not request.user.is_authenticated:
+        return JsonResponse({'detail': 'Not allowed.'}, status=405)
+
+    service_request = get_object_or_404(
+        ServiceRequest,
+        id=id,
+        technician_username=request.user.username,
+    )
+    try:
+        payload = json.loads(request.body or '{}')
+        latitude = float(payload['latitude'])
+        longitude = float(payload['longitude'])
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+        return JsonResponse({'detail': 'Valid latitude and longitude are required.'}, status=400)
+
+    if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+        return JsonResponse({'detail': 'Coordinate is out of range.'}, status=400)
+
+    service_request.technician_latitude = latitude
+    service_request.technician_longitude = longitude
+    from django.utils import timezone
+    service_request.technician_location_updated_at = timezone.now()
+    service_request.save(update_fields=[
+        'technician_latitude', 'technician_longitude', 'technician_location_updated_at'
+    ])
+    return JsonResponse({'status': 'ok'})
 def start_tracking(request, id):
 
     service_request = get_object_or_404(

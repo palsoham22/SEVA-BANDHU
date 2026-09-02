@@ -364,6 +364,16 @@ function startLiveTracking(jobId) {
                         longitude: lng
                     }));
                 }
+
+                fetch(`/technician/tracking-location/${jobId}/`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ latitude: lat, longitude: lng })
+                }).catch(() => {});
             },
             (error) => console.error("❌ GPS ERROR:", error),
             { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 }

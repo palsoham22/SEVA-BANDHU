@@ -8,13 +8,13 @@
 
 <style>
 /* =========================================================
-   Live Navigation Map - Customer Design Alignment
+   Live Navigation Map & AI Assistant - Executive UI
 ========================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 .dashboard-container {
-    max-width: 1240px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 32px 20px 64px;
     font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -65,6 +65,7 @@
     font-weight: 600;
     text-decoration: none;
     transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .btn-action-outline:hover {
@@ -72,31 +73,265 @@
     color: #0f172a;
 }
 
-.journey-status-pill {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    color: #1e40af;
-    padding: 14px 20px;
-    border-radius: 14px;
-    font-size: 15px;
-    font-weight: 700;
-    margin-bottom: 24px;
+.nav-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+/* AI Assistant Panel */
+.panel-assistant {
+    width: 380px;
+    flex-shrink: 0;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.assistant-header {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 16px 20px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-#map {
-    height: 600px;
+.assistant-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 700px;
+    overflow-y: auto;
+}
+
+.route-summary {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.route-summary-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.stat-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-box span {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.stat-box strong {
+    font-size: 18px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #0f172a;
+    font-weight: 800;
+}
+
+.btn-voice {
     width: 100%;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-voice:hover {
+    background: #dbeafe;
+}
+.btn-voice.muted {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #e2e8f0;
+}
+
+.next-instruction {
+    background: #2563eb;
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.next-instruction .label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+    margin-bottom: 8px;
+}
+
+.next-instruction .step-text {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 8px;
+}
+
+.next-instruction .step-dist {
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.route-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.route-steps .label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.step-item {
+    display: flex;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    align-items: flex-start;
+}
+
+.step-item:last-child {
+    border-bottom: none;
+}
+
+.step-icon {
+    width: 24px;
+    height: 24px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 12px;
+    color: #475569;
+}
+
+.step-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.step-details .desc {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.step-details .dist {
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* Map Container */
+.map-container {
+    flex-grow: 1;
+    height: 750px;
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid #e2e8f0;
     box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+    position: relative;
 }
 
-@media (max-width: 768px) {
-    #map { height: 440px; }
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+.w-100 { width: 100%; }
+
+.status-overlay {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid #e2e8f0;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13.5px;
+    color: #0f172a;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Bike Marker Styling */
+.bike-marker-icon {
+    background: #ffffff;
+    border: 2px solid #2563eb;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+@media (max-width: 1024px) {
+    .nav-layout {
+        flex-direction: column;
+    }
+    .panel-assistant {
+        width: 100%;
+    }
+    .map-container {
+        height: 500px;
+    }
+    .assistant-body {
+        max-height: 400px;
+    }
 }
 </style>
 
@@ -109,7 +344,7 @@
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                 Technician Route Navigation
             </h1>
-            <p>Real-time turn-by-turn route tracking to customer address.</p>
+            <p>Real-time tracking for Service Request #REQ-{{ service_request.id }}</p>
         </div>
 
         <a href="{% url 'technician_my_jobs' %}" class="btn-action-outline">
@@ -117,14 +352,71 @@
         </a>
     </div>
 
-    <!-- ETA Banner -->
-    <div id="journey-info" class="journey-status-pill">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Calculating live route &amp; ETA...
-    </div>
+    <!-- Layout -->
+    <div class="nav-layout">
+        
+        <!-- AI Assistant Panel -->
+        <div class="panel-assistant">
+            <div class="assistant-header">
+                🤖 AI ROUTE ASSISTANT
+            </div>
+            
+            <div class="assistant-body">
+                <!-- Summary -->
+                <div class="route-summary">
+                    <div class="route-summary-title">Optimal Route</div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span>ETA</span>
+                            <strong id="eta-val">-- min</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span>Remaining</span>
+                            <strong id="dist-val">-- km</strong>
+                        </div>
+                        <div class="stat-box" style="grid-column: span 2;">
+                            <span>Traffic</span>
+                            <strong style="color: #64748b; font-size: 14px;">Data Unavailable</strong>
+                        </div>
+                    </div>
+                    <button id="voice-toggle" class="btn-voice">🔊 Voice ON</button>
+                </div>
+                
+                <!-- Next Instruction -->
+                <div class="next-instruction" id="next-instruction-card">
+                    <div class="label">NEXT INSTRUCTION</div>
+                    <div id="next-step-text" class="step-text">Calculating route...</div>
+                    <div id="next-step-dist" class="step-dist">--</div>
+                </div>
 
-    <!-- Map Container -->
-    <div id="map"></div>
+                <!-- Recalculate -->
+                <button id="recalc-btn" class="btn-action-outline w-100" style="margin-bottom: 10px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px; vertical-align:-2px;"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                    Recalculate Route
+                </button>
+
+                <!-- Steps List -->
+                <div class="route-steps">
+                    <div class="label">ROUTE STEPS</div>
+                    <div id="route-steps-list">
+                        <div class="step-item" style="color: #64748b;">
+                            Awaiting route data...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="map-container">
+            <div id="tracking-status" class="status-overlay">
+                <span style="width:8px; height:8px; background:#16a34a; border-radius:50%; display:inline-block;"></span>
+                Connecting to GPS...
+            </div>
+            <div id="map"></div>
+        </div>
+
+    </div>
 
 </div>
 
@@ -133,9 +425,15 @@
 <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
 <script>
+// =========================================================
+// Coordinates
+// =========================================================
 const customerLat = parseFloat("{{ service_request.customer_latitude }}") || 22.5726;
 const customerLng = parseFloat("{{ service_request.customer_longitude }}") || 88.3639;
 
+// =========================================================
+// Map Setup
+// =========================================================
 const map = L.map('map', { zoomControl: true }).setView([customerLat, customerLng], 14);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -145,10 +443,12 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 setTimeout(() => { map.invalidateSize(); }, 800);
 
-const technicianIcon = L.icon({
-    iconUrl: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
-    iconSize: [40, 40],
-    iconAnchor: [20, 20]
+// Use a nice clear bike emoji inside a DivIcon for perfect rendering
+const technicianIcon = L.divIcon({
+    className: 'bike-marker-icon',
+    html: '🛵',
+    iconSize: [42, 42],
+    iconAnchor: [21, 21]
 });
 
 let technicianMarker = null;
@@ -162,91 +462,311 @@ const customerIcon = L.icon({
     shadowSize: [41, 41]
 });
 
-const customerMarker = L.marker([customerLat, customerLng], {
+L.marker([customerLat, customerLng], {
     icon: customerIcon,
     zIndexOffset: 999
-}).addTo(map).bindPopup("🏠 Customer Location");
+}).addTo(map).bindPopup("🏠 Customer Destination");
 
+// =========================================================
+// Tracking & WebSocket
+// =========================================================
 const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
 const trackingSocket = new WebSocket(wsProtocol + window.location.host + '/ws/tracking/{{ service_request.id }}/');
+
+trackingSocket.onopen = function() {
+    console.log("WebSocket connected");
+};
+
+// =========================================================
+// Voice Assistant Logic
+// =========================================================
+let voiceEnabled = true;
+
+const voiceToggleBtn = document.getElementById('voice-toggle');
+voiceToggleBtn.addEventListener('click', () => {
+    voiceEnabled = !voiceEnabled;
+    if (voiceEnabled) {
+        voiceToggleBtn.innerHTML = '🔊 Voice ON';
+        voiceToggleBtn.classList.remove('muted');
+        speak("Voice guidance enabled.");
+    } else {
+        voiceToggleBtn.innerHTML = '🔇 Voice OFF';
+        voiceToggleBtn.classList.add('muted');
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+    }
+});
+
+function speak(text) {
+    if (!voiceEnabled || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel(); // Prevent queue buildup
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
+}
+
+// =========================================================
+// Routing Logic & GPS Watch
+// =========================================================
+let lastRecalcLatLng = null;
+let currentInstructionIndex = -1;
+let lastSpokenInstructionIndex = -1;
+let hasArrived = false;
+
+// Format distance nicely
+function formatDist(meters) {
+    if (meters < 1000) return Math.round(meters) + " m";
+    return (meters / 1000).toFixed(1) + " km";
+}
+
+// Convert maneuver type to arrow/icon
+function getManeuverIcon(type, modifier) {
+    if (type === 'Turn') {
+        if (modifier && modifier.includes('Left')) return '↰';
+        if (modifier && modifier.includes('Right')) return '↱';
+    }
+    if (type === 'Roundabout') return '↻';
+    if (type === 'DestinationReached') return '📍';
+    return '↑';
+}
+
+document.getElementById('recalc-btn').addEventListener('click', () => {
+    if (technicianMarker) {
+        forceRecalculate(technicianMarker.getLatLng().lat, technicianMarker.getLatLng().lng);
+    }
+});
+
+function forceRecalculate(lat, lng) {
+    if (!window.routeControl) return;
+    document.getElementById('next-step-text').textContent = "Recalculating...";
+    lastRecalcLatLng = L.latLng(lat, lng);
+    currentInstructionIndex = -1;
+    lastSpokenInstructionIndex = -1;
+    
+    window.routeControl.setWaypoints([
+        L.latLng(lat, lng),
+        L.latLng(customerLat, customerLng)
+    ]);
+}
 
 if (!("geolocation" in navigator)) {
     alert("Geolocation is not available! You must be on HTTPS or localhost to use GPS tracking.");
 } else {
     navigator.geolocation.watchPosition(
-    function(position) {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
+        function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const currentLatLng = L.latLng(lat, lng);
 
-        if (trackingSocket.readyState === WebSocket.OPEN) {
-            trackingSocket.send(JSON.stringify({
-                type: 'live_location',
-                request_id: "{{ service_request.id }}",
-                latitude: lat,
-                longitude: lng
-            }));
-        }
+            // Update Status overlay
+            document.getElementById('tracking-status').innerHTML = '<span style="width:8px; height:8px; background:#16a34a; border-radius:50%; display:inline-block;"></span> Live GPS Tracking';
 
-        setTimeout(() => {
+            // Send to Backend for Customer to see
+            if (trackingSocket.readyState === WebSocket.OPEN) {
+                trackingSocket.send(JSON.stringify({
+                    type: 'live_location',
+                    request_id: "{{ service_request.id }}",
+                    latitude: lat,
+                    longitude: lng
+                }));
+            }
+
+            // Persist the coordinate as a fallback for customers behind a
+            // WebSocket-blocking proxy or WSGI-only development server.
+            fetch('{% url "technician_tracking_location" service_request.id %}', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.cookie.match(/(?:^|; )csrftoken=([^;]*)/)?.[1] || ''
+                },
+                body: JSON.stringify({ latitude: lat, longitude: lng })
+            }).catch(() => {});
+
+            // Init Map View
             if (!window.mapInitialized) {
                 map.setView([lat, lng], 15);
                 window.mapInitialized = true;
             }
-            map.invalidateSize();
-        }, 500);
 
-        if (!technicianMarker) {
-            technicianMarker = L.marker([lat, lng], {
-                icon: technicianIcon,
-                zIndexOffset: 1000
-            }).addTo(map).bindPopup("🛵 Technician (You)");
-        } else {
-            technicianMarker.setLatLng([lat, lng]);
+            // Update Technician Marker
+            if (!technicianMarker) {
+                technicianMarker = L.marker([lat, lng], {
+                    icon: technicianIcon,
+                    zIndexOffset: 1000
+                }).addTo(map).bindPopup("🛵 Technician (You)");
+            } else {
+                technicianMarker.setLatLng([lat, lng]);
+            }
+
+            // Arrival Detection (within 70 meters / 0.07km)
+            const distToCustomer = map.distance(currentLatLng, L.latLng(customerLat, customerLng));
+            if (distToCustomer <= 70 && !hasArrived) {
+                hasArrived = true;
+                document.getElementById('next-step-text').textContent = "Arrived at customer location";
+                document.getElementById('next-step-dist').textContent = "0 m";
+                document.getElementById('dist-val').textContent = "0 m";
+                document.getElementById('eta-val').textContent = "Arrived";
+                document.getElementById('next-instruction-card').style.background = "#16a34a"; // Green
+                speak("Arrived at customer location.");
+            }
+
+            // Route initialization & intelligent rerouting
+            if (!window.routeControl) {
+                // First time setup
+                window.routeControl = L.Routing.control({
+                    createMarker: function() { return null; },
+                    waypoints: [
+                        currentLatLng,
+                        L.latLng(customerLat, customerLng)
+                    ],
+                    routeWhileDragging: false,
+                    addWaypoints: false,
+                    draggableWaypoints: false,
+                    fitSelectedRoutes: true,
+                    show: false // Hide default LRM panel
+                }).addTo(map);
+
+                lastRecalcLatLng = currentLatLng;
+
+                // Handle routing response
+                window.routeControl.on('routesfound', function(e) {
+                    window.currentRouteData = e.routes[0];
+                    renderRouteSteps(window.currentRouteData);
+                });
+
+            } else {
+                // If we have a route, dynamically track progress without recalculating
+                if (window.currentRouteData && !hasArrived) {
+                    trackRouteProgress(currentLatLng, window.currentRouteData);
+                    
+                    // Intelligent Rerouting Threshold
+                    // Recalculate if moved > 250 meters from last calculation point
+                    if (lastRecalcLatLng) {
+                        const distFromLastCalc = map.distance(currentLatLng, lastRecalcLatLng);
+                        if (distFromLastCalc > 250) {
+                            console.log("Significant deviation detected. Recalculating route...");
+                            forceRecalculate(lat, lng);
+                        }
+                    }
+                }
+            }
+
+            // Smooth Pan
+            if (!window.mapCentered) {
+                map.panTo([lat, lng]);
+                window.mapCentered = true;
+            }
+        },
+        function(error) {
+            console.error("❌ GPS ERROR:", error);
+            document.getElementById('tracking-status').innerHTML = '<span style="width:8px; height:8px; background:#dc2626; border-radius:50%; display:inline-block;"></span> GPS Error';
+            document.getElementById('tracking-status').style.color = '#dc2626';
+        },
+        { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 }
+    );
+}
+
+function renderRouteSteps(route) {
+    const instructions = route.instructions;
+    const stepsList = document.getElementById('route-steps-list');
+    stepsList.innerHTML = '';
+    
+    instructions.forEach((inst, idx) => {
+        // Skip useless 0 distance "Head" instructions
+        if (idx === 0 && inst.distance < 10 && instructions.length > 1) return; 
+
+        // Build Step Item UI
+        const iconText = getManeuverIcon(inst.type, inst.modifier);
+        const stepHtml = `
+            <div class="step-item" id="step-row-${idx}">
+                <div class="step-icon">${iconText}</div>
+                <div class="step-details">
+                    <div class="desc">${inst.text}</div>
+                    <div class="dist">${formatDist(inst.distance)}</div>
+                </div>
+            </div>
+        `;
+        stepsList.insertAdjacentHTML('beforeend', stepHtml);
+    });
+}
+
+function trackRouteProgress(currentLatLng, route) {
+    if (hasArrived) return;
+    
+    const coords = route.coordinates;
+    const instructions = route.instructions;
+    
+    // 1. Find the closest coordinate index on the route
+    let minPathDist = Infinity;
+    let closestIndex = 0;
+    
+    // Only search forward from the last known closest index to prevent snapping backwards
+    let searchStartIndex = window.lastClosestIndex || 0;
+    
+    for (let i = searchStartIndex; i < coords.length; i++) {
+        const d = map.distance(currentLatLng, coords[i]);
+        if (d < minPathDist) {
+            minPathDist = d;
+            closestIndex = i;
         }
-
-        if (!window.routeControl) {
-            window.routeControl = L.Routing.control({
-                createMarker: function() { return null; },
-                waypoints: [
-                    L.latLng(lat, lng),
-                    L.latLng(customerLat, customerLng)
-                ],
-                routeWhileDragging: false,
-                addWaypoints: false,
-                draggableWaypoints: false,
-                fitSelectedRoutes: true,
-                show: false
-            }).addTo(map);
-
-            window.routeControl.on('routesfound', function(e) {
-                const route = e.routes[0];
-                const distance = (route.summary.totalDistance / 1000).toFixed(2);
-                const time = Math.round(route.summary.totalTime / 60);
-
-                document.getElementById('journey-info').innerHTML =
-                    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${time} mins away • ${distance} km remaining to Customer`;
-            });
-        } else {
-            window.routeControl.setWaypoints([
-                L.latLng(lat, lng),
-                L.latLng(customerLat, customerLng)
-            ]);
+        // Early break if distance starts increasing again (simplistic optimization)
+        if (d > minPathDist + 500) break;
+    }
+    
+    window.lastClosestIndex = closestIndex;
+    
+    // 2. Calculate true remaining distance along the route
+    let remainingDist = map.distance(currentLatLng, coords[closestIndex]);
+    for (let i = closestIndex; i < coords.length - 1; i++) {
+        remainingDist += map.distance(coords[i], coords[i+1]);
+    }
+    
+    document.getElementById('dist-val').textContent = formatDist(remainingDist);
+    
+    // Estimate ETA (assuming avg 20 km/h = ~333 meters per min in city traffic)
+    const estimatedMinutes = Math.max(1, Math.round(remainingDist / 333));
+    document.getElementById('eta-val').textContent = estimatedMinutes + " min";
+    
+    // 3. Find the NEXT instruction
+    let nextInstrObj = null;
+    let nextInstrId = -1;
+    
+    for (let i = 0; i < instructions.length; i++) {
+        // The instruction applies at its `index` coordinate
+        if (instructions[i].index > closestIndex) {
+            // Found the next turn!
+            nextInstrObj = instructions[i];
+            nextInstrId = i;
+            break;
         }
-
-        if (!window.mapCentered) {
-            map.panTo([lat, lng]);
-            window.mapCentered = true;
+    }
+    
+    if (nextInstrObj) {
+        document.getElementById('next-step-text').textContent = nextInstrObj.text;
+        
+        // Calculate distance strictly to the next turn coordinate
+        const distToTurn = map.distance(currentLatLng, coords[nextInstrObj.index]);
+        document.getElementById('next-step-dist').textContent = formatDist(distToTurn);
+        
+        // Highlight active step in the list
+        document.querySelectorAll('.step-item').forEach(el => el.style.opacity = '0.5');
+        const activeRow = document.getElementById(`step-row-${nextInstrId}`);
+        if (activeRow) activeRow.style.opacity = '1';
+        
+        // Speak instruction if it changed
+        if (lastSpokenInstructionIndex !== nextInstrId) {
+            currentInstructionIndex = nextInstrId;
+            let speechText = nextInstrObj.text;
+            if (distToTurn > 30) {
+                speechText += ` in ${Math.round(distToTurn)} meters.`;
+            }
+            speak(speechText);
+            lastSpokenInstructionIndex = nextInstrId;
         }
-    },
-    function(error) {
-        console.error("❌ GPS ERROR:", error);
-        if (error.code === 1) alert("GPS Error: Permission Denied.");
-        else if (error.code === 2) alert("GPS Error: Position Unavailable (Are you testing on a desktop without GPS?).");
-        else if (error.code === 3) alert("GPS Error: Timeout (Could not get location).");
-        else alert("GPS Error: " + error.message);
-    },
-    { enableHighAccuracy: false, maximumAge: 0, timeout: 20000 }
-);
+    }
 }
 </script>
 

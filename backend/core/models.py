@@ -192,6 +192,12 @@ class ServiceRequest(models.Model):
         blank=True
     )
 
+    # Last coordinate sent by the assigned technician.  Keeping this on the
+    # request lets the customer map recover after a refresh or a dropped socket.
+    technician_latitude = models.FloatField(null=True, blank=True)
+    technician_longitude = models.FloatField(null=True, blank=True)
+    technician_location_updated_at = models.DateTimeField(null=True, blank=True)
+
     PAYMENT_STATUS = [
         ('pending', 'Pending'),
         ('paid', 'Paid'),

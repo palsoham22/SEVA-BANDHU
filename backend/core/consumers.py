@@ -1,8 +1,18 @@
 import json
+from django.utils import timezone
 from channels.generic.websocket import AsyncJsonWebsocketConsumer, AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 
 class RequestConsumer(AsyncJsonWebsocketConsumer):
+
+    @database_sync_to_async
+    def save_live_location(self, request_id, latitude, longitude):
+        from core.models import ServiceRequest
+        ServiceRequest.objects.filter(id=request_id).update(
+            technician_latitude=latitude,
+            technician_longitude=longitude,
+            technician_location_updated_at=timezone.now(),
+        )
 
     #########################################################
     # CONNECT
@@ -121,7 +131,13 @@ class RequestConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive(self, text_data=None, bytes_data=None):
 
-        data = json.loads(text_data)
+        if not text_data:
+            return
+
+        try:
+            data = json.loads(text_data)
+        except (TypeError, json.JSONDecodeError):
+            return
 
         print("[ICON] RECEIVED:", data)
 
@@ -130,8 +146,11 @@ class RequestConsumer(AsyncJsonWebsocketConsumer):
         ##################################
         if data.get('type') == 'live_location':
 
-            latitude = data.get('latitude')
-            longitude = data.get('longitude')
+            try:
+                latitude = float(data.get('latitude'))
+                longitude = float(data.get('longitude'))
+            except (TypeError, ValueError):
+                return
             request_id = data.get('request_id')
 
             print(
@@ -147,6 +166,8 @@ class RequestConsumer(AsyncJsonWebsocketConsumer):
             #################################################
 
             if request_id:
+
+                await self.save_live_location(request_id, latitude, longitude)
 
                 await self.channel_layer.group_send(
 
