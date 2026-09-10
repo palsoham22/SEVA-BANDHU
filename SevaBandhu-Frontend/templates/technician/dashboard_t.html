@@ -632,9 +632,14 @@ setInterval(() => {
                 My Assigned Jobs
             </a>
 
+            <a href="{% url 'technician_support' %}" class="btn-action" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Support
+            </a>
+
             <button class="btn-action" style="background:#fef3c7; color:#92400e; border:none; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight:600; cursor:pointer;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4H6a2 2 0 0 1-2-2V6Z"/><circle cx="18" cy="12" r="2"/></svg>
-                Wallet (₹0.00)
+                Wallet (₹{{ technician.wallet_balance|default:"0.00" }})
             </button>
 
             <a href="{% url 'technician_logout' %}" class="btn-action" style="background:#fff1f2; color:#be123c; border:1px solid #ffe4e6; padding: 8px 16px; border-radius: 8px; font-size: 13px;">

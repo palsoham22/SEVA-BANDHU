@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Support History | Seva Bandhu{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
+.history-container {
+    max-width: 1040px;
+    margin: 32px auto 64px;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px 28px;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+}
+
+.history-title h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 0 6px;
+    color: #0f172a;
+}
+
+.history-title p {
+    margin: 0;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.history-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-action-outline {
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+.btn-action-outline:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.btn-action-primary {
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    background: #2563eb;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    transition: all 0.2s;
+}
+.btn-action-primary:hover {
+    background: #1d4ed8;
+    color: #ffffff;
+}
+
+.tickets-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.ticket-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    transition: all 0.2s ease;
+}
+.ticket-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+    transform: translateY(-1px);
+}
+
+.ticket-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ticket-header-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ticket-num {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.badge-status {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 99px;
+    letter-spacing: 0.04em;
+}
+.status-OPEN { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.status-IN_PROGRESS { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+.status-RESOLVED { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.status-CLOSED { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+.ticket-issue-title {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.ticket-meta-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12.5px;
+    color: #64748b;
+    flex-wrap: wrap;
+}
+
+.ticket-context-pill {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #334155;
+}
+
+.empty-state-box {
+    text-align: center;
+    padding: 64px 20px;
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 16px;
+}
+.empty-state-box svg {
+    width: 54px;
+    height: 54px;
+    color: #94a3b8;
+    margin-bottom: 16px;
+}
+.empty-state-box h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 6px;
+}
+.empty-state-box p {
+    color: #64748b;
+    font-size: 14px;
+    margin: 0 0 20px;
+}
+</style>
+
+<div class="history-container">
+
+    <div class="history-header">
+        <div class="history-title">
+            <h1>My Support History</h1>
+            <p>Review past inquiries, guided troubleshooting records, and Admin resolutions.</p>
+        </div>
+        <div class="history-actions">
+            <a href="{% url 'technician_dashboard' %}" class="btn-action-outline">
+                &larr; Dashboard
+            </a>
+            <a href="{% url 'technician_support' %}" class="btn-action-primary">
+                + New Support Chat
+            </a>
+        </div>
+    </div>
+
+    <div class="tickets-grid">
+        {% for t in tickets %}
+        <div class="ticket-card">
+            <div class="ticket-main">
+                <div class="ticket-header-line">
+                    <span class="ticket-num">#{{ t.ticket_number }}</span>
+                    <span class="badge-status status-{{ t.status }}">{{ t.get_status_display }}</span>
+                    <span style="font-size:12px; color:#94a3b8;">• {{ t.get_category_display }}</span>
+                </div>
+
+                <div class="ticket-issue-title">
+                    {{ t.issue }}
+                </div>
+
+                <div class="ticket-meta-info">
+                    <span>Created: {{ t.created_at|date:"d M Y, h:i A" }}</span>
+                    
+                    {% if t.related_service_request %}
+                    <span class="ticket-context-pill">
+                        Job: #SB-{{ t.related_service_request.id|add:1000 }} ({{ t.related_service_request.service_detail.service_category }})
+                    </span>
+                    {% elif t.related_withdrawal %}
+                    <span class="ticket-context-pill">
+                        Withdrawal: ₹{{ t.related_withdrawal.amount }}
+                    </span>
+                    {% elif t.related_wallet_transaction %}
+                    <span class="ticket-context-pill">
+                        Transaction: ₹{{ t.related_wallet_transaction.amount }}
+                    </span>
+                    {% endif %}
+
+                    {% if t.messages.count > 0 %}
+                    <span>{{ t.messages.count }} messages</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                <a href="{% url 'technician_support' %}?ticket={{ t.id }}" class="btn-action-outline" style="border-color:#2563eb; color:#2563eb; font-weight:700;">
+                    Open Conversation &rarr;
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <h3>No Support Tickets Yet</h3>
+            <p>You haven't escalated any inquiries to Admin Support. Guided assistant helps resolve common questions instantly.</p>
+            <a href="{% url 'technician_support' %}" class="btn-action-primary">
+                Open Support Assistant
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
+

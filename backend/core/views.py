@@ -1958,3 +1958,296 @@ def technician_chat(request, request_id):
         'technician': technician,
         'current_user_username': request.user.username
     })
+
+
+# ==========================================
+# FULL-PAGE TECHNICIAN SUPPORT VIEWS
+# ==========================================
+
+from core.models import (
+    TechnicianSupportTicket,
+    TechnicianSupportMessage,
+    TechnicianWalletTransaction,
+    TechnicianWithdrawal,
+    TechnicianIncentive,
+)
+from core.services.technician_support_flow import (
+    SUPPORT_CATEGORIES,
+    get_categories_list,
+    get_category_issues,
+    get_issue_details,
+)
+
+
+def technician_support(request):
+    """
+    Dedicated Full-Page Technician Support Chat.
+    Stage 1: Deterministic Guided Support Assistant
+    Stage 2: Real-time Live Technician <-> Admin Chat
+    """
+    if not request.user.is_authenticated:
+        return redirect('technician_login')
+
+    technician = Technician_signup.objects.filter(username__iexact=request.user.username.strip()).first()
+    if not technician:
+        return redirect('technician_login')
+
+    ticket_id = request.GET.get('ticket') or request.GET.get('ticket_id')
+    active_ticket = None
+    ticket_messages = []
+
+    if ticket_id:
+        try:
+            active_ticket = TechnicianSupportTicket.objects.select_related(
+                'technician',
+                'related_service_request',
+                'related_service_request__service_detail',
+                'related_service_request__service_address',
+                'related_wallet_transaction',
+                'related_withdrawal',
+                'related_incentive'
+            ).get(id=ticket_id, technician=technician)
+            ticket_messages = active_ticket.messages.all().order_by('created_at')
+            # Mark any unread admin messages as read
+            active_ticket.messages.filter(sender_role='ADMIN', is_read=False).update(is_read=True)
+        except TechnicianSupportTicket.DoesNotExist:
+            active_ticket = None
+
+    # Check for pre-selected service context (e.g. from "Get Help About This Service")
+    preselected_service = None
+    service_id = request.GET.get('service_id')
+    if service_id:
+        try:
+            preselected_service = ServiceRequest.objects.filter(
+                id=service_id,
+                technician_username__iexact=technician.username
+            ).select_related('service_detail', 'service_address').first()
+        except Exception:
+            preselected_service = None
+
+    # Fetch technician's verified records for context selection
+    recent_jobs = ServiceRequest.objects.filter(
+        technician_username__iexact=technician.username
+    ).select_related('service_detail', 'service_address').order_by('-created_at')[:15]
+
+    wallet_transactions = technician.wallet_transactions.all().order_by('-created_at')[:10]
+    withdrawals = technician.withdrawals.all().order_by('-created_at')[:10]
+    incentives = technician.incentives.all().order_by('-created_at')[:10]
+    my_tickets = technician.support_tickets.all().order_by('-created_at')
+
+    categories_json = json.dumps(SUPPORT_CATEGORIES)
+
+    context = {
+        'technician': technician,
+        'active_ticket': active_ticket,
+        'ticket_messages': ticket_messages,
+        'preselected_service': preselected_service,
+        'recent_jobs': recent_jobs,
+        'wallet_transactions': wallet_transactions,
+        'withdrawals': withdrawals,
+        'incentives': incentives,
+        'my_tickets': my_tickets,
+        'support_categories_json': categories_json,
+        'current_user_username': request.user.username,
+    }
+    return render(request, 'technician/support.html', context)
+
+
+def technician_support_api_context(request):
+    """
+    API endpoint returning authenticated technician's verified data records.
+    Prevents unauthorized context injection from other technicians.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=401)
+
+    technician = Technician_signup.objects.filter(username__iexact=request.user.username.strip()).first()
+    if not technician:
+        return JsonResponse({'status': 'error', 'message': 'Technician not found'}, status=404)
+
+    context_type = request.GET.get('type')
+    data = []
+
+    if context_type == 'services':
+        services_qs = ServiceRequest.objects.filter(
+            technician_username__iexact=technician.username
+        ).select_related('service_detail', 'service_address').order_by('-created_at')[:20]
+
+        for s in services_qs:
+            data.append({
+                'id': s.id,
+                'booking_id': f"SB-{1000 + s.id}",
+                'category': s.service_detail.service_category,
+                'customer': s.customer_username,
+                'date': s.created_at.strftime('%d %b %Y'),
+                'amount': f"₹{s.amount:,.2f}",
+                'status': s.status,
+                'city': s.service_address.city if s.service_address else ''
+            })
+
+    elif context_type == 'wallet':
+        tx_qs = technician.wallet_transactions.all().order_by('-created_at')[:15]
+        for tx in tx_qs:
+            data.append({
+                'id': tx.id,
+                'type': tx.transaction_type,
+                'amount': f"₹{tx.amount:,.2f}",
+                'description': tx.description,
+                'date': tx.created_at.strftime('%d %b %Y, %I:%M %p')
+            })
+
+    elif context_type == 'withdrawals':
+        w_qs = technician.withdrawals.all().order_by('-created_at')[:15]
+        for w in w_qs:
+            data.append({
+                'id': w.id,
+                'amount': f"₹{w.amount:,.2f}",
+                'status': w.status,
+                'payout_method': w.payout_method,
+                'reference_id': w.reference_id or 'Pending Assignment',
+                'date': w.created_at.strftime('%d %b %Y, %I:%M %p')
+            })
+
+    elif context_type == 'incentives':
+        inc_qs = technician.incentives.all().order_by('-created_at')[:15]
+        for inc in inc_qs:
+            data.append({
+                'id': inc.id,
+                'title': inc.title,
+                'amount': f"₹{inc.amount:,.2f}",
+                'type': inc.get_incentive_type_display(),
+                'status': inc.get_status_display(),
+                'date': inc.created_at.strftime('%d %b %Y')
+            })
+
+    return JsonResponse({'status': 'success', 'data': data})
+
+
+@csrf_exempt
+def technician_support_api_escalate(request):
+    """
+    API to escalate guided support into a real-time Admin Support Ticket.
+    Validates technician ownership of all attached context.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Authentication required.'}, status=401)
+
+    technician = Technician_signup.objects.filter(username__iexact=request.user.username.strip()).first()
+    if not technician:
+        return JsonResponse({'status': 'error', 'message': 'Technician profile not found.'}, status=404)
+
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'POST method required.'}, status=405)
+
+    try:
+        payload = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON payload.'}, status=400)
+
+    category = payload.get('category', 'OTHER')
+    issue = payload.get('issue', 'General Inquiry')
+    subject = payload.get('subject') or f"Support: {issue}"
+    guided_steps = payload.get('guided_steps', [])
+    escalation_reason = payload.get('escalation_reason', 'Troubleshooting unassisted or requested admin contact')
+    technician_message_text = payload.get('message_text', '').strip()
+
+    # Context verification server-side
+    related_service = None
+    svc_id = payload.get('service_request_id')
+    if svc_id:
+        related_service = ServiceRequest.objects.filter(
+            id=svc_id,
+            technician_username__iexact=technician.username
+        ).first()
+
+    related_wallet = None
+    wallet_id = payload.get('wallet_transaction_id')
+    if wallet_id:
+        related_wallet = technician.wallet_transactions.filter(id=wallet_id).first()
+
+    related_withdrawal = None
+    withdrawal_id = payload.get('withdrawal_id')
+    if withdrawal_id:
+        related_withdrawal = technician.withdrawals.filter(id=withdrawal_id).first()
+
+    related_incentive = None
+    incentive_id = payload.get('incentive_id')
+    if incentive_id:
+        related_incentive = technician.incentives.filter(id=incentive_id).first()
+
+    priority = 'HIGH' if category in ['PAYMENT_EARNINGS', 'WALLET_WITHDRAWAL'] else 'MEDIUM'
+
+    # Create the Ticket
+    ticket = TechnicianSupportTicket.objects.create(
+        technician=technician,
+        category=category,
+        issue=issue,
+        subject=subject,
+        status='OPEN',
+        priority=priority,
+        related_service_request=related_service,
+        related_wallet_transaction=related_wallet,
+        related_withdrawal=related_withdrawal,
+        related_incentive=related_incentive,
+        guided_flow_state=guided_steps,
+        escalation_reason=escalation_reason,
+    )
+
+    # Initial system message summarizing escalation context
+    system_summary = f"Support ticket #{ticket.ticket_number} created. Issue: '{issue}' ({category}). Guided troubleshooting completed with {len(guided_steps)} step(s)."
+    TechnicianSupportMessage.objects.create(
+        ticket=ticket,
+        sender=request.user,
+        sender_role='SYSTEM',
+        message=system_summary
+    )
+
+    if technician_message_text:
+        TechnicianSupportMessage.objects.create(
+            ticket=ticket,
+            sender=request.user,
+            sender_role='TECHNICIAN',
+            message=technician_message_text
+        )
+
+    # Notify technician via notification record if service request attached
+    if related_service:
+        try:
+            TechnicianNotification.objects.create(
+                technician=technician,
+                service_request=related_service,
+                title=f"Ticket #{ticket.ticket_number} Submitted",
+                message=f"Your support request regarding '{issue}' has been sent to Admin Support."
+            )
+        except Exception:
+            pass
+
+    return JsonResponse({
+        'status': 'success',
+        'ticket_id': ticket.id,
+        'ticket_number': ticket.ticket_number,
+        'status_display': ticket.get_status_display()
+    })
+
+
+def technician_support_history(request):
+    """
+    Lists past and active support tickets for the authenticated technician.
+    """
+    if not request.user.is_authenticated:
+        return redirect('technician_login')
+
+    technician = Technician_signup.objects.filter(username__iexact=request.user.username.strip()).first()
+    if not technician:
+        return redirect('technician_login')
+
+    tickets = technician.support_tickets.all().select_related(
+        'related_service_request',
+        'related_service_request__service_detail'
+    ).order_by('-created_at')
+
+    return render(request, 'technician/support_history.html', {
+        'technician': technician,
+        'tickets': tickets
+    })
+

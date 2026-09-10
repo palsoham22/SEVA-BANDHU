@@ -1,0 +1,576 @@
+{% extends 'admin_custom/base_admin.html' %}
+
+{% block title %}Ticket #{{ ticket.ticket_number }} | Technician Support Desk{% endblock %}
+
+{% block content %}
+<style>
+.desk-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.desk-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+    margin-bottom: 20px;
+}
+
+.desk-card-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 14px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.guided-history-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 28px;
+}
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 6px;
+    bottom: -16px;
+    width: 2px;
+    background: #e2e8f0;
+}
+.timeline-item:last-child::before {
+    display: none;
+}
+.timeline-dot {
+    position: absolute;
+    left: 3px;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #2563eb;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 2px #bfdbfe;
+}
+
+.timeline-step-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+.timeline-step-desc {
+    font-size: 12.5px;
+    color: #64748b;
+}
+
+/* Chat Pane */
+.chat-pane {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    height: 720px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+.chat-pane-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+}
+
+.chat-pane-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.admin-msg-row {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.row-admin { align-items: flex-end; }
+.row-tech { align-items: flex-start; }
+.row-system { align-items: center; margin: 6px 0; }
+
+.chat-bubble {
+    max-width: 82%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    position: relative;
+    word-break: break-word;
+}
+.bubble-admin {
+    background: #7c3aed;
+    color: white;
+    border-bottom-right-radius: 3px;
+}
+.bubble-tech {
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    border-bottom-left-radius: 3px;
+}
+.bubble-sys {
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 11.5px;
+    padding: 5px 12px;
+    border-radius: 99px;
+    border: 1px solid #e2e8f0;
+}
+
+.chat-bubble-meta {
+    font-size: 10.5px;
+    opacity: 0.75;
+    margin-top: 4px;
+    display: block;
+}
+
+.chat-pane-input {
+    padding: 14px 18px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    gap: 10px;
+    background: #ffffff;
+}
+
+@media (max-width: 992px) {
+    .desk-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+    <div>
+        <a href="{% url 'admin_technician_support_list' %}" style="text-decoration:none; color:#64748b; font-size:13.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px; margin-bottom:6px;">
+            &larr; Back to Support Desk
+        </a>
+        <h2 style="font-family:'Plus Jakarta Sans',sans-serif; font-size:22px; font-weight:800; color:#0f172a; margin:0;">
+            Support Ticket #{{ ticket.ticket_number }}
+        </h2>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px;">
+        <span class="badge" style="font-size:13px; padding:6px 12px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;">
+            Category: {{ ticket.get_category_display }}
+        </span>
+        {% if ticket.priority == 'URGENT' or ticket.priority == 'HIGH' %}
+        <span class="badge badge-danger">{{ ticket.priority }}</span>
+        {% else %}
+        <span class="badge" style="background:#f1f5f9; color:#475569;">{{ ticket.priority }}</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="desk-grid">
+
+    <!-- LEFT COLUMN: Ticket Meta, Attached Context, Guided History -->
+    <div>
+        <!-- Status & Actions Card -->
+        <div class="desk-card" style="border-top: 4px solid #2563eb;">
+            <div class="desk-card-title">
+                <span>Status &amp; Management</span>
+                <span style="font-size:12px; color:#64748b;">Assigned: {{ ticket.assigned_admin.username|default:"Unassigned" }}</span>
+            </div>
+
+            <form method="POST" action="{% url 'admin_technician_support_update_status' ticket.id %}">
+                {% csrf_token %}
+                <div style="display:flex; gap:10px; margin-bottom:12px;">
+                    <select name="status" style="flex:1; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13.5px; font-weight:600;">
+                        {% for s_val, s_label in statuses %}
+                        <option value="{{ s_val }}" {% if ticket.status == s_val %}selected{% endif %}>{{ s_label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary" style="padding:9px 16px;">Update Status</button>
+                </div>
+
+                <div style="margin-top:10px;">
+                    <label style="font-size:12px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">Resolution / Admin Notes:</label>
+                    <textarea name="admin_notes" rows="2" style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit;" placeholder="Add internal notes or resolution remarks...">{{ ticket.admin_notes|default:"" }}</textarea>
+                </div>
+            </form>
+        </div>
+
+        <!-- Technician Info Card -->
+        <div class="desk-card">
+            <div class="desk-card-title">
+                <span>Technician Details</span>
+                <a href="{% url 'admin_technician_detail' ticket.technician.id %}" style="font-size:12px; color:#2563eb; text-decoration:none; font-weight:700;">View Profile &rarr;</a>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:13px;">
+                <div>
+                    <strong style="color:#64748b; font-size:11px; text-transform:uppercase; display:block;">Username:</strong>
+                    {{ ticket.technician.username }}
+                </div>
+                <div>
+                    <strong style="color:#64748b; font-size:11px; text-transform:uppercase; display:block;">Service Category:</strong>
+                    {{ ticket.technician.service_category|default:"General" }}
+                </div>
+                <div>
+                    <strong style="color:#64748b; font-size:11px; text-transform:uppercase; display:block;">Contact:</strong>
+                    {{ ticket.technician.contact }}
+                </div>
+                <div>
+                    <strong style="color:#64748b; font-size:11px; text-transform:uppercase; display:block;">Rating &amp; Warnings:</strong>
+                    ⭐ {{ ticket.technician.average_rating|default:"0.0" }} ({{ ticket.technician.warning_count }} Warnings)
+                </div>
+            </div>
+        </div>
+
+        <!-- Attached Context Card -->
+        {% if ticket.related_service_request %}
+        <div class="desk-card" style="background:#f0f9ff; border-color:#bae6fd;">
+            <div class="desk-card-title" style="border-color:#e0f2fe; color:#0369a1;">
+                <span>Attached Service Request (#SB-{{ ticket.related_service_request.id|add:1000 }})</span>
+                <span class="badge" style="background:#dbeafe; color:#1d4ed8;">{{ ticket.related_service_request.status }}</span>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px; color:#0c4a6e;">
+                <div>
+                    <strong style="font-size:11px; text-transform:uppercase; color:#0284c7; display:block;">Service:</strong>
+                    {{ ticket.related_service_request.service_detail.service_category }}
+                </div>
+                <div>
+                    <strong style="font-size:11px; text-transform:uppercase; color:#0284c7; display:block;">Customer:</strong>
+                    {{ ticket.related_service_request.customer_username }} ({{ ticket.related_service_request.service_detail.contact_number }})
+                </div>
+                <div>
+                    <strong style="font-size:11px; text-transform:uppercase; color:#0284c7; display:block;">Amount &amp; Payment:</strong>
+                    ₹{{ ticket.related_service_request.amount }} ({{ ticket.related_service_request.payment_status }})
+                </div>
+                <div>
+                    <strong style="font-size:11px; text-transform:uppercase; color:#0284c7; display:block;">Scheduled Date:</strong>
+                    {{ ticket.related_service_request.service_detail.preferred_service_date }} ({{ ticket.related_service_request.service_detail.preferred_time_slot }})
+                </div>
+                <div style="grid-column: span 2;">
+                    <strong style="font-size:11px; text-transform:uppercase; color:#0284c7; display:block;">Address:</strong>
+                    {{ ticket.related_service_request.service_address.house_flat_no }}, {{ ticket.related_service_request.service_address.street_area }}, {{ ticket.related_service_request.service_address.city }} - {{ ticket.related_service_request.service_address.pincode }}
+                </div>
+            </div>
+        </div>
+        {% elif ticket.related_withdrawal %}
+        <div class="desk-card" style="background:#fffbeb; border-color:#fed7aa;">
+            <div class="desk-card-title" style="color:#9a3412;">
+                <span>Attached Withdrawal Request (#{{ ticket.related_withdrawal.id }})</span>
+                <span class="badge badge-warning">{{ ticket.related_withdrawal.status }}</span>
+            </div>
+            <p style="margin:0; font-size:13px; color:#78350f;">
+                Amount: <strong>₹{{ ticket.related_withdrawal.amount }}</strong> • Payout Method: {{ ticket.related_withdrawal.payout_method }}<br>
+                Reference: {{ ticket.related_withdrawal.reference_id|default:"Pending" }} • Date: {{ ticket.related_withdrawal.created_at|date:"d M Y, h:i A" }}
+            </p>
+        </div>
+        {% elif ticket.related_wallet_transaction %}
+        <div class="desk-card" style="background:#f8fafc; border-color:#cbd5e1;">
+            <div class="desk-card-title">
+                <span>Attached Wallet Transaction (#{{ ticket.related_wallet_transaction.id }})</span>
+            </div>
+            <p style="margin:0; font-size:13px; color:#334155;">
+                {{ ticket.related_wallet_transaction.transaction_type }}: <strong>₹{{ ticket.related_wallet_transaction.amount }}</strong><br>
+                Description: {{ ticket.related_wallet_transaction.description }}<br>
+                Date: {{ ticket.related_wallet_transaction.created_at|date:"d M Y, h:i A" }}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- GUIDED SUPPORT HISTORY (Crucial requirement) -->
+        <div class="desk-card">
+            <div class="desk-card-title">
+                <span>Guided Troubleshooting History</span>
+                <span style="font-size:11.5px; color:#64748b;">Completed in Stage 1</span>
+            </div>
+
+            <div style="font-size:13px; color:#475569; margin-bottom:12px;">
+                <strong>Initial Problem Selected:</strong> {{ ticket.issue }}
+                {% if ticket.escalation_reason %}
+                <br><strong>Escalation Trigger:</strong> {{ ticket.escalation_reason }}
+                {% endif %}
+            </div>
+
+            <div class="guided-history-timeline">
+                {% if ticket.guided_flow_state %}
+                    {% for step in ticket.guided_flow_state %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-step-title">Step {{ step.step }}: {{ step.title }}</div>
+                        <div class="timeline-step-desc">
+                            Technician Response: 
+                            {% if step.response == 'NOT_SOLVED' %}
+                            <span style="color:#b91c1c; font-weight:700;">❌ Still having problem</span>
+                            {% elif step.response == 'REQUESTED_ADMIN' %}
+                            <span style="color:#7c3aed; font-weight:700;">💬 Requested Admin directly</span>
+                            {% else %}
+                            <span style="color:#15803d; font-weight:700;">✓ Solved</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color:#94a3b8; font-size:13px; margin:0;">No multi-step history recorded (Direct escalation / Other flow).</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Real-Time Technician <-> Admin Live Chat -->
+    <div>
+        <div class="chat-pane">
+            <div class="chat-pane-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:36px; height:36px; border-radius:10px; background:#eff6ff; color:#2563eb; display:flex; align-items:center; justify-content:center; font-weight:800;">
+                        {{ ticket.technician.username|first|upper }}
+                    </div>
+                    <div>
+                        <div style="font-size:14.5px; font-weight:700; color:#0f172a;">Live Chat with {{ ticket.technician.username }}</div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div id="wsStatus" style="font-size:11.5px; font-weight:600; display:flex; align-items:center; gap:5px;">
+                                <span id="adminStatusDot" style="width:7px; height:7px; border-radius:50%; background:#16a34a; display:inline-block;"></span>
+                                <span id="adminStatusText">Connecting...</span>
+                            </div>
+                            <button type="button" id="adminReconnectBtn" onclick="initAdminSocket()" style="display:none; font-size:11px; padding:2px 8px; border-radius:4px; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; font-weight:600; cursor:pointer;">Reconnect</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="badge" style="background:#f1f5f9; color:#475569;">#{{ ticket.ticket_number }}</span>
+                </div>
+            </div>
+
+            <div class="chat-pane-messages" id="adminChatMessages">
+                {% for msg in messages_list %}
+                    {% if msg.sender_role == 'SYSTEM' %}
+                    <div class="admin-msg-row row-system">
+                        <div class="chat-bubble bubble-sys">{{ msg.message }}</div>
+                    </div>
+                    {% elif msg.sender_role == 'ADMIN' %}
+                    <div class="admin-msg-row row-admin">
+                        <div class="chat-bubble bubble-admin">
+                            {{ msg.message }}
+                            <span class="chat-bubble-meta">{{ msg.created_at|date:"h:i A" }} • You (Admin)</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="admin-msg-row row-tech">
+                        <div class="chat-bubble bubble-tech">
+                            {{ msg.message }}
+                            <span class="chat-bubble-meta" style="color:#64748b;">{{ msg.created_at|date:"h:i A" }} • {{ ticket.technician.username }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div id="adminNoticeBar" style="display:none; padding:6px 14px; background:#fffbeb; color:#b45309; font-size:12px; border-top:1px solid #fef3c7; text-align:center; font-weight:500;"></div>
+
+            <div class="chat-pane-input">
+                <input type="text" id="adminMsgInput" placeholder="Type a response to {{ ticket.technician.username }}..." style="flex:1; padding:10px 14px; border:1px solid #cbd5e1; border-radius:8px; font-size:13.5px; outline:none;" autocomplete="off">
+                <button id="adminSendBtn" class="btn btn-primary" style="padding:10px 20px;">Send</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const ticketId = "{{ ticket.id }}";
+const currentAdminUsername = "{{ request.user.username }}";
+const messagesBox = document.getElementById('adminChatMessages');
+const msgInput = document.getElementById('adminMsgInput');
+const sendBtn = document.getElementById('adminSendBtn');
+const adminStatusDot = document.getElementById('adminStatusDot');
+const adminStatusText = document.getElementById('adminStatusText');
+const adminReconnectBtn = document.getElementById('adminReconnectBtn');
+const adminNoticeBar = document.getElementById('adminNoticeBar');
+
+let socket = null;
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+
+function scrollChat() {
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+}
+scrollChat();
+
+function showNotice(text, isError = false) {
+    if (!adminNoticeBar) return;
+    adminNoticeBar.innerText = text;
+    adminNoticeBar.style.display = 'block';
+    adminNoticeBar.style.background = isError ? '#fef2f2' : '#fffbeb';
+    adminNoticeBar.style.color = isError ? '#b91c1c' : '#b45309';
+}
+
+function hideNotice() {
+    if (!adminNoticeBar) return;
+    adminNoticeBar.style.display = 'none';
+}
+
+function setAdminStatus(state, message) {
+    if (state === 'connected') {
+        adminStatusDot.style.background = '#16a34a';
+        adminStatusText.innerText = message || 'Live Chat Connected';
+        adminStatusText.style.color = '#16a34a';
+        adminReconnectBtn.style.display = 'none';
+        hideNotice();
+    } else if (state === 'reconnecting') {
+        adminStatusDot.style.background = '#d97706';
+        adminStatusText.innerText = message || 'Reconnecting...';
+        adminStatusText.style.color = '#d97706';
+        adminReconnectBtn.style.display = 'inline-block';
+        adminReconnectBtn.innerText = 'Reconnect Now';
+        adminReconnectBtn.onclick = function() { initAdminSocket(); };
+    } else if (state === 'session_expired') {
+        adminStatusDot.style.background = '#dc2626';
+        adminStatusText.innerText = message || 'Session Expired (Logged out)';
+        adminStatusText.style.color = '#dc2626';
+        adminReconnectBtn.style.display = 'inline-block';
+        adminReconnectBtn.innerText = 'Refresh Page';
+        adminReconnectBtn.onclick = function() { window.location.reload(); };
+        showNotice("Admin session expired. Please refresh the page or log in again.", true);
+    } else {
+        adminStatusDot.style.background = '#dc2626';
+        adminStatusText.innerText = message || 'Disconnected';
+        adminStatusText.style.color = '#dc2626';
+        adminReconnectBtn.style.display = 'inline-block';
+        adminReconnectBtn.innerText = 'Reconnect Now';
+        adminReconnectBtn.onclick = function() { initAdminSocket(); };
+    }
+}
+
+function initAdminSocket() {
+    clearTimeout(reconnectTimer);
+    if (socket) {
+        try {
+            socket.onclose = null; // Suppress duplicate close listener
+            socket.close();
+        } catch (e) {}
+    }
+
+    const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const wsUrl = `${wsProtocol}${window.location.host}/ws/support/technician/${ticketId}/`;
+
+    setAdminStatus('reconnecting', 'Connecting...');
+
+    try {
+        socket = new WebSocket(wsUrl);
+    } catch (err) {
+        console.error("WebSocket constructor error:", err);
+        setAdminStatus('disconnected', 'Connection Error');
+        return;
+    }
+
+    socket.onopen = function() {
+        console.log("Admin Support Chat Connected ✅");
+        reconnectAttempts = 0;
+        setAdminStatus('connected', 'Live Chat Connected');
+        socket.send(JSON.stringify({ action: 'mark_read' }));
+    };
+
+    socket.onmessage = function(e) {
+        try {
+            const data = JSON.parse(e.data);
+            if (data.type === 'support_chat_message') {
+                const isMe = (data.sender_username === currentAdminUsername);
+                const row = document.createElement('div');
+                row.className = 'admin-msg-row ' + (isMe ? 'row-admin' : 'row-tech');
+
+                const bubble = document.createElement('div');
+                bubble.className = 'chat-bubble ' + (isMe ? 'bubble-admin' : 'bubble-tech');
+                
+                const senderLabel = isMe ? 'You (Admin)' : '{{ ticket.technician.username }}';
+                bubble.innerHTML = `${escapeHtml(data.message)}<span class="chat-bubble-meta" style="${isMe ? '' : 'color:#64748b;'}">${data.created_at || 'Just now'} • ${senderLabel}</span>`;
+
+                row.appendChild(bubble);
+                messagesBox.appendChild(row);
+                scrollChat();
+            } else if (data.type === 'ticket_status_updated') {
+                const sysRow = document.createElement('div');
+                sysRow.className = 'admin-msg-row row-system';
+                sysRow.innerHTML = `<div class="chat-bubble bubble-sys">${data.message}</div>`;
+                messagesBox.appendChild(sysRow);
+                scrollChat();
+            }
+        } catch (err) {
+            console.error("WS message parse error:", err);
+        }
+    };
+
+    socket.onclose = function(e) {
+        console.warn("Admin Support Chat closed:", e.code, e.reason);
+        if (e.code === 4401) {
+            setAdminStatus('session_expired', 'Session Expired (Logged out)');
+            return;
+        }
+        if (e.code === 4403) {
+            setAdminStatus('disconnected', 'Unauthorized (Admin access required)');
+            showNotice("Unauthorized: You must be logged in as an Admin.", true);
+            return;
+        }
+
+        reconnectAttempts++;
+        const delay = Math.min(1000 * Math.pow(1.4, reconnectAttempts), 8000);
+        setAdminStatus('reconnecting', `Offline — Reconnecting in ${Math.round(delay/1000)}s...`);
+        reconnectTimer = setTimeout(initAdminSocket, delay);
+    };
+
+    socket.onerror = function(err) {
+        console.error("Admin WebSocket error:", err);
+    };
+}
+
+function sendMsg() {
+    const txt = msgInput.value.trim();
+    if (!txt) return;
+
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ message: txt }));
+        msgInput.value = '';
+        hideNotice();
+    } else {
+        showNotice("Chat is currently offline. Attempting to reconnect now...");
+        initAdminSocket();
+    }
+}
+
+sendBtn.onclick = sendMsg;
+msgInput.onkeyup = function(e) {
+    if (e.key === 'Enter') sendMsg();
+};
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.innerText = text;
+    return div.innerHTML;
+}
+
+// Initialize on page load
+initAdminSocket();
+</script>
+{% endblock %}
+

@@ -227,4 +227,42 @@ class PlatformAnalyticsAdmin(admin.ModelAdmin):
         
         from django.shortcuts import render
         return render(request, self.change_list_template, extra_context)
-    
+
+
+from .models import (
+    TechnicianWalletTransaction,
+    TechnicianWithdrawal,
+    TechnicianIncentive,
+    TechnicianSupportTicket,
+    TechnicianSupportMessage
+)
+
+@admin.register(TechnicianWalletTransaction)
+class TechnicianWalletTransactionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'technician', 'amount', 'transaction_type', 'description', 'created_at']
+    list_filter = ['transaction_type', 'created_at']
+    search_fields = ['technician__username', 'description']
+
+@admin.register(TechnicianWithdrawal)
+class TechnicianWithdrawalAdmin(admin.ModelAdmin):
+    list_display = ['id', 'technician', 'amount', 'status', 'payout_method', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['technician__username', 'reference_id']
+
+@admin.register(TechnicianIncentive)
+class TechnicianIncentiveAdmin(admin.ModelAdmin):
+    list_display = ['id', 'technician', 'title', 'amount', 'incentive_type', 'status', 'created_at']
+    list_filter = ['incentive_type', 'status', 'created_at']
+    search_fields = ['technician__username', 'title']
+
+@admin.register(TechnicianSupportTicket)
+class TechnicianSupportTicketAdmin(admin.ModelAdmin):
+    list_display = ['ticket_number', 'technician', 'category', 'issue', 'status', 'priority', 'escalated_at']
+    list_filter = ['status', 'priority', 'category', 'created_at']
+    search_fields = ['ticket_number', 'technician__username', 'issue', 'subject']
+
+@admin.register(TechnicianSupportMessage)
+class TechnicianSupportMessageAdmin(admin.ModelAdmin):
+    list_display = ['id', 'ticket', 'sender', 'sender_role', 'created_at', 'is_read']
+    list_filter = ['sender_role', 'is_read', 'created_at']
+    search_fields = ['ticket__ticket_number', 'sender__username', 'message']

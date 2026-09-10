@@ -1,0 +1,1514 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Technician Support Assistant | Seva Bandhu{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #eff6ff;
+    --bg-page: #f8fafc;
+    --border-color: #e2e8f0;
+    --text-dark: #0f172a;
+    --text-muted: #64748b;
+}
+
+.support-container {
+    max-width: 960px;
+    margin: 24px auto 48px;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 160px);
+    min-height: 650px;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+}
+
+/* Header */
+.support-header {
+    padding: 16px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.back-link {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.back-link:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.support-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.header-title-box h2 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.support-status-indicator {
+    font-size: 12px;
+    font-weight: 600;
+    color: #16a34a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: #16a34a;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.status-dot-green {
+    background: #16a34a !important;
+}
+
+.status-dot.status-dot-amber {
+    background: #d97706 !important;
+}
+
+.status-dot.status-dot-red {
+    background: #dc2626 !important;
+    animation: none !important;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-header-action {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.btn-header-action:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+.btn-header-primary {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+.btn-header-primary:hover {
+    background: #dbeafe;
+}
+
+/* Chat Messages Area */
+.support-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+}
+
+/* Bubble styling */
+.chat-row {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.chat-row-assistant {
+    align-items: flex-start;
+}
+
+.chat-row-user {
+    align-items: flex-end;
+}
+
+.chat-row-system {
+    align-items: center;
+    margin: 8px 0;
+}
+
+.msg-bubble {
+    max-width: 80%;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.55;
+    position: relative;
+    word-break: break-word;
+}
+
+.msg-assistant {
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.msg-user {
+    background: #2563eb;
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.msg-admin {
+    background: #7c3aed;
+    color: #ffffff;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+.msg-system {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 16px;
+    text-align: center;
+    max-width: 90%;
+}
+
+.msg-meta {
+    font-size: 11px;
+    opacity: 0.75;
+    margin-top: 6px;
+    display: block;
+}
+
+.sender-tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+    display: block;
+}
+
+/* Interactive Options Container */
+.options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    max-width: 100%;
+}
+
+.opt-btn {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    color: #1e293b;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: inherit;
+}
+
+.opt-btn:hover:not(:disabled) {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.12);
+}
+
+.opt-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f8fafc;
+}
+
+.opt-btn-selected {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+}
+
+.opt-btn-category {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 220px;
+}
+
+.opt-btn-admin-cta {
+    background: #fff1f2;
+    border-color: #fecdd3;
+    color: #be123c;
+    font-weight: 700;
+}
+.opt-btn-admin-cta:hover:not(:disabled) {
+    background: #e11d48;
+    color: white;
+    border-color: #e11d48;
+}
+
+.opt-btn-success {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #047857;
+    font-weight: 700;
+}
+.opt-btn-success:hover:not(:disabled) {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+}
+
+/* Service Context Attached Card */
+.service-context-card {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    max-width: 540px;
+}
+
+.service-card-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0369a1;
+}
+
+.service-card-info p {
+    margin: 2px 0;
+    font-size: 12.5px;
+    color: #0c4a6e;
+}
+
+.service-badge {
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+/* Escalation Notice Box */
+.escalation-box {
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-left: 4px solid #d97706;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 10px;
+    max-width: 600px;
+}
+
+.escalation-box h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #92400e;
+    margin: 0 0 4px;
+}
+
+.escalation-box p {
+    font-size: 13px;
+    color: #b45309;
+    margin: 0 0 12px;
+}
+
+/* Chat Input Bar (Stage 2) */
+.support-input-area {
+    padding: 16px 24px;
+    background: #ffffff;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.support-input {
+    flex: 1;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+}
+.support-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+.support-input:disabled {
+    background: #f8fafc;
+    cursor: not-allowed;
+}
+
+.support-send-btn {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+}
+.support-send-btn:hover:not(:disabled) {
+    background: #1d4ed8;
+}
+.support-send-btn:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* Slide-over Drawer for Recent Jobs / Services */
+.drawer-backdrop {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(3px);
+    z-index: 1050;
+}
+
+.drawer {
+    position: fixed;
+    top: 0; right: -420px;
+    width: 400px;
+    max-width: 90vw;
+    height: 100vh;
+    background: #ffffff;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.15);
+    z-index: 1060;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.drawer.open {
+    right: 0;
+}
+
+.drawer-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.drawer-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.job-select-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.job-select-item:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.job-item-title {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.job-item-detail {
+    font-size: 12.5px;
+    color: #64748b;
+    margin: 2px 0;
+}
+
+/* Modal for custom text input */
+.input-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 1100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.input-modal {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+}
+
+@media (max-width: 768px) {
+    .support-container {
+        margin: 12px 8px;
+        height: calc(100vh - 120px);
+        border-radius: 12px;
+    }
+    .opt-btn-category {
+        flex: 1 1 100%;
+    }
+    .msg-bubble {
+        max-width: 90%;
+    }
+}
+</style>
+
+<div class="support-container">
+
+    <!-- Header Section -->
+    <div class="support-header">
+        <div class="header-left">
+            <a href="{% url 'technician_dashboard' %}" class="back-link" title="Return to Dashboard">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"/></svg>
+            </a>
+            <div class="support-avatar" id="supportAvatar">
+                {% if active_ticket %}👨‍💼{% else %}🤖{% endif %}
+            </div>
+            <div class="header-title-box">
+                <h2 id="supportTitle">
+                    {% if active_ticket %}
+                        Admin Support #{{ active_ticket.ticket_number }}
+                    {% else %}
+                        Support Assistant
+                    {% endif %}
+                </h2>
+                <div class="support-status-indicator" id="supportStatusText">
+                    <span class="status-dot status-dot-green" id="supportStatusDot"></span>
+                    <span id="statusLabelText">
+                        {% if active_ticket %}
+                            Connected to Live Admin Support [{{ active_ticket.get_status_display }}]
+                        {% else %}
+                            Online • Predefined Guided Support
+                        {% endif %}
+                    </span>
+                    <button type="button" id="supportReconnectBtn" onclick="reconnectLiveChat()" style="display:none; font-size:11px; padding:2px 8px; border-radius:5px; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; font-weight:600; cursor:pointer; margin-left:6px;">Reconnect</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <button class="btn-header-action" onclick="openServicesDrawer()" title="View & attach recent services">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                My Services
+            </button>
+            <a href="{% url 'technician_support_history' %}" class="btn-header-action" title="View past support tickets">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                My Tickets ({{ my_tickets.count }})
+            </a>
+            {% if active_ticket %}
+            <a href="{% url 'technician_support' %}" class="btn-header-action btn-header-primary" title="Start a new guided support session">
+                + New Inquiry
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Live Messages Stream -->
+    <div class="support-messages" id="supportMessages">
+        {% if active_ticket %}
+            <!-- Stage 2: Loaded Ticket Conversation -->
+            <div class="chat-row chat-row-system">
+                <div class="msg-system">
+                    Ticket #{{ active_ticket.ticket_number }} created on {{ active_ticket.escalated_at|date:"M d, Y, h:i A" }} • Status: {{ active_ticket.get_status_display }}
+                </div>
+            </div>
+
+            {% if active_ticket.related_service_request %}
+            <div class="chat-row chat-row-assistant">
+                <div class="service-context-card">
+                    <div class="service-card-info">
+                        <h4>Attached Service: {{ active_ticket.related_service_request.service_detail.service_category }}</h4>
+                        <p>Customer: <strong>{{ active_ticket.related_service_request.customer_username }}</strong> • Booking: #SB-{{ active_ticket.related_service_request.id|add:1000 }}</p>
+                        <p>Amount: ₹{{ active_ticket.related_service_request.amount }} • Status: {{ active_ticket.related_service_request.status }}</p>
+                    </div>
+                    <span class="service-badge">REQ-{{ active_ticket.related_service_request.id }}</span>
+                </div>
+            </div>
+            {% endif %}
+
+            {% for msg in ticket_messages %}
+                {% if msg.sender_role == 'SYSTEM' %}
+                    <div class="chat-row chat-row-system">
+                        <div class="msg-system">{{ msg.message }}</div>
+                    </div>
+                {% elif msg.sender_role == 'TECHNICIAN' %}
+                    <div class="chat-row chat-row-user">
+                        <div class="msg-bubble msg-user">
+                            <span class="sender-tag">You (Technician)</span>
+                            {{ msg.message }}
+                            <span class="msg-meta">{{ msg.created_at|date:"M d, h:i A" }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="chat-row chat-row-assistant">
+                        <div class="msg-bubble msg-admin">
+                            <span class="sender-tag">Admin Support</span>
+                            {{ msg.message }}
+                            <span class="msg-meta">{{ msg.created_at|date:"M d, h:i A" }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            {% if active_ticket.status == 'RESOLVED' or active_ticket.status == 'CLOSED' %}
+            <div class="chat-row chat-row-system">
+                <div class="msg-system" style="background:#ecfdf5; color:#065f46; border-color:#a7f3d0;">
+                    ✓ Admin has marked this support ticket as {{ active_ticket.get_status_display }}.
+                </div>
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- Stage 1: Guided Support Assistant Initialization -->
+            <!-- Populated via JavaScript Engine Below -->
+        {% endif %}
+    </div>
+
+    <!-- Input Bar -->
+    <div class="support-input-area">
+        <input type="text" id="liveChatInput" class="support-input" 
+               placeholder="{% if active_ticket %}Type a message to Admin Support...{% else %}Choose an option above to continue...{% endif %}"
+               {% if not active_ticket %}disabled{% endif %} autocomplete="off">
+        <button id="liveSendBtn" class="support-send-btn" {% if not active_ticket %}disabled{% endif %}>
+            <span>Send</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+    </div>
+
+</div>
+
+<!-- Recent Services Slide-Over Drawer -->
+<div class="drawer-backdrop" id="servicesDrawerBackdrop" onclick="closeServicesDrawer()"></div>
+<div class="drawer" id="servicesDrawer">
+    <div class="drawer-header">
+        <h3>Select a Service / Job</h3>
+        <button onclick="closeServicesDrawer()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#64748b;">&times;</button>
+    </div>
+    <div class="drawer-body">
+        <p style="font-size:13px; color:#64748b; margin-top:0;">Attach an assigned job as context for this support session:</p>
+        {% for job in recent_jobs %}
+        <div class="job-select-item" onclick="attachServiceContext('{{ job.id }}', '{{ job.service_detail.service_category|escapejs }}', '{{ job.customer_username|escapejs }}', '{{ job.amount }}', '{{ job.status|escapejs }}')">
+            <div class="job-item-title">
+                <span>{{ job.service_detail.service_category }}</span>
+                <span style="font-size:12px; color:#2563eb;">#SB-{{ job.id|add:1000 }}</span>
+            </div>
+            <div class="job-item-detail">Customer: <strong>{{ job.customer_username }}</strong></div>
+            <div class="job-item-detail">Date: {{ job.created_at|date:"d M Y" }} • Amount: ₹{{ job.amount }}</div>
+            <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                <span class="service-badge">{{ job.status }}</span>
+                <span style="font-size:12px; font-weight:700; color:#2563eb;">Get Help &rarr;</span>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align:center; padding:32px 16px; color:#94a3b8; font-size:14px;">
+            No recent service jobs found.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal for custom description in 'Other' flow -->
+<div class="input-modal-overlay" id="customInputModal">
+    <div class="input-modal">
+        <h3 style="margin:0 0 8px; font-size:18px; font-weight:800; color:#0f172a;">Describe Your Issue</h3>
+        <p style="font-size:13.5px; color:#64748b; margin-bottom:16px;">Please provide a short description of the problem you are experiencing:</p>
+        <textarea id="customIssueInput" rows="4" style="width:100%; border:1.5px solid #cbd5e1; border-radius:10px; padding:12px; font-family:inherit; font-size:14px; outline:none;" placeholder="Explain the problem..."></textarea>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+            <button onclick="closeCustomModal()" style="padding:9px 16px; border-radius:8px; border:1px solid #cbd5e1; background:white; cursor:pointer; font-weight:600;">Cancel</button>
+            <button onclick="submitCustomIssue('guided')" style="padding:9px 16px; border-radius:8px; border:none; background:#2563eb; color:white; cursor:pointer; font-weight:600;">Guided Support</button>
+            <button onclick="submitCustomIssue('admin')" style="padding:9px 16px; border-radius:8px; border:none; background:#e11d48; color:white; cursor:pointer; font-weight:600;">Contact Admin</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* =========================================================================
+   FULL-PAGE TECHNICIAN SUPPORT ENGINE
+   Deterministic Guided Tree -> Server-Verified Escalation -> Real-Time Chat
+   ========================================================================= */
+
+const SUPPORT_CATEGORIES = {{ support_categories_json|safe }};
+const currentTechnicianUsername = "{{ technician.username }}";
+let activeTicketId = "{{ active_ticket.id|default:'' }}";
+let activeTicketNumber = "{{ active_ticket.ticket_number|default:'' }}";
+
+// Guided Flow State Tracker
+let flowSession = {
+    categoryKey: null,
+    issueKey: null,
+    currentStepIndex: 0,
+    stepsHistory: [],
+    consecutiveNegativeResponses: 0,
+    attachedContext: {
+        serviceId: "{{ preselected_service.id|default:'' }}",
+        serviceCategory: "{{ preselected_service.service_detail.service_category|default:'' }}",
+        customerName: "{{ preselected_service.customer_username|default:'' }}",
+        amount: "{{ preselected_service.amount|default:'' }}",
+        status: "{{ preselected_service.status|default:'' }}",
+        walletId: null,
+        withdrawalId: null,
+        incentiveId: null
+    }
+};
+
+const messagesContainer = document.getElementById('supportMessages');
+const liveChatInput = document.getElementById('liveChatInput');
+const liveSendBtn = document.getElementById('liveSendBtn');
+
+function scrollToBottom() {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// -------------------------------------------------------------
+// STAGE 1: GUIDED PREDEFINED SUPPORT FLOW
+// -------------------------------------------------------------
+
+function initGuidedFlow() {
+    if (activeTicketId) {
+        initLiveAdminChat(activeTicketId);
+        return;
+    }
+
+    // Check if preselected service was passed
+    if (flowSession.attachedContext.serviceId) {
+        addAssistantMessage(
+            `Hi ${currentTechnicianUsername}! I see you want help regarding Service REQ-${flowSession.attachedContext.serviceId} (${flowSession.attachedContext.serviceCategory} for customer ${flowSession.attachedContext.customerName}).`,
+            renderPreselectedServiceOptions
+        );
+    } else {
+        addAssistantMessage("Hi! How can we help you today?", renderCategoryOptions);
+    }
+}
+
+function renderCategoryOptions() {
+    const categories = Object.values(SUPPORT_CATEGORIES);
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'options-grid';
+
+    categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn opt-btn-category';
+        btn.innerHTML = `<strong>${cat.title}</strong>`;
+        btn.onclick = () => selectCategory(cat.key, btn, optionsDiv);
+        optionsDiv.appendChild(btn);
+    });
+
+    messagesContainer.appendChild(optionsDiv);
+    scrollToBottom();
+}
+
+function selectCategory(categoryKey, selectedBtn, container) {
+    disableOptionContainer(container, selectedBtn);
+    flowSession.categoryKey = categoryKey;
+    const cat = SUPPORT_CATEGORIES[categoryKey];
+
+    addUserMessage(cat.title);
+
+    // Context check: If payment or service category and no context attached yet
+    if (cat.requires_context === 'financial_choice' && !flowSession.attachedContext.serviceId && !flowSession.attachedContext.walletId) {
+        setTimeout(() => {
+            addAssistantMessage("Which payment or earnings issue is this about?", renderFinancialContextOptions);
+        }, 300);
+    } else if (cat.requires_context === 'service' && !flowSession.attachedContext.serviceId) {
+        setTimeout(() => {
+            addAssistantMessage("Would you like to attach a specific service job, or discuss general booking procedures?", renderServiceContextChoice);
+        }, 300);
+    } else if (categoryKey === 'OTHER') {
+        openCustomModal();
+    } else {
+        setTimeout(() => {
+            addAssistantMessage("What specific problem are you facing?", () => renderIssueOptions(categoryKey));
+        }, 300);
+    }
+}
+
+function renderFinancialContextOptions() {
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'options-grid';
+
+    const choices = [
+        { label: "A specific completed service", type: "services" },
+        { label: "Wallet ledger / Balance", type: "wallet" },
+        { label: "Withdrawal bank payout", type: "withdrawals" },
+        { label: "General earnings question", type: "general" }
+    ];
+
+    choices.forEach(ch => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerHTML = `<span>${ch.label}</span>`;
+        btn.onclick = () => {
+            disableOptionContainer(optionsDiv, btn);
+            addUserMessage(ch.label);
+            if (ch.type === 'services') {
+                openServicesDrawer();
+            } else if (ch.type === 'wallet' || ch.type === 'withdrawals') {
+                fetchAndSelectFinancialContext(ch.type);
+            } else {
+                renderIssueOptions(flowSession.categoryKey);
+            }
+        };
+        optionsDiv.appendChild(btn);
+    });
+
+    messagesContainer.appendChild(optionsDiv);
+    scrollToBottom();
+}
+
+function renderServiceContextChoice() {
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'options-grid';
+
+    const btn1 = document.createElement('button');
+    btn1.className = 'opt-btn';
+    btn1.innerHTML = '📋 Select from My Recent Jobs';
+    btn1.onclick = () => {
+        disableOptionContainer(optionsDiv, btn1);
+        openServicesDrawer();
+    };
+
+    const btn2 = document.createElement('button');
+    btn2.className = 'opt-btn';
+    btn2.innerHTML = 'General booking issue (No specific job)';
+    btn2.onclick = () => {
+        disableOptionContainer(optionsDiv, btn2);
+        addUserMessage("General booking issue");
+        renderIssueOptions(flowSession.categoryKey);
+    };
+
+    optionsDiv.appendChild(btn1);
+    optionsDiv.appendChild(btn2);
+    messagesContainer.appendChild(optionsDiv);
+    scrollToBottom();
+}
+
+function renderPreselectedServiceOptions() {
+    addContextCardPreview(flowSession.attachedContext);
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'options-grid';
+
+    const serviceCategories = [
+        { key: 'PAYMENT_EARNINGS', title: 'Payment / Earnings issue' },
+        { key: 'SERVICE_BOOKING', title: 'Booking / Schedule issue' },
+        { key: 'SERVICE_BOOKING', title: 'Customer issue' },
+        { key: 'SERVICE_BOOKING', title: 'Service / Parts issue' },
+        { key: 'OTHER', title: 'Other' }
+    ];
+
+    serviceCategories.forEach(sc => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerHTML = `<span>${sc.title}</span>`;
+        btn.onclick = () => {
+            disableOptionContainer(optionsDiv, btn);
+            flowSession.categoryKey = sc.key;
+            addUserMessage(sc.title);
+            renderIssueOptions(sc.key);
+        };
+        optionsDiv.appendChild(btn);
+    });
+
+    messagesContainer.appendChild(optionsDiv);
+    scrollToBottom();
+}
+
+function renderIssueOptions(categoryKey) {
+    const cat = SUPPORT_CATEGORIES[categoryKey];
+    if (!cat) return;
+
+    const issues = Object.values(cat.issues);
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'options-grid';
+
+    issues.forEach(iss => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerHTML = `<span>${iss.title}</span>`;
+        btn.onclick = () => selectIssue(iss.key, btn, optionsDiv);
+        optionsDiv.appendChild(btn);
+    });
+
+    messagesContainer.appendChild(optionsDiv);
+    scrollToBottom();
+}
+
+function selectIssue(issueKey, selectedBtn, container) {
+    disableOptionContainer(container, selectedBtn);
+    flowSession.issueKey = issueKey;
+    const cat = SUPPORT_CATEGORIES[flowSession.categoryKey];
+    const issue = cat.issues[issueKey];
+
+    addUserMessage(issue.title);
+
+    flowSession.currentStepIndex = 0;
+    setTimeout(() => {
+        presentTroubleshootingStep(0);
+    }, 400);
+}
+
+function presentTroubleshootingStep(stepIndex) {
+    const cat = SUPPORT_CATEGORIES[flowSession.categoryKey];
+    const issue = cat.issues[flowSession.issueKey];
+    const step = issue.steps[stepIndex];
+
+    if (!step) {
+        // Reached end of steps without resolution -> Escalate to Admin
+        promptAdminEscalation("We've completed all automated troubleshooting steps for this issue without a resolution.");
+        return;
+    }
+
+    const stepText = `**Step ${step.step}: ${step.title}**\n\n${step.guidance}\n\n*Action suggestion: ${step.action_hint}*`;
+    
+    addAssistantMessage(stepText, () => {
+        const promptText = "Did this solve your problem?";
+        addAssistantMessage(promptText, () => {
+            renderYesNoOptions(stepIndex, step.title);
+        });
+    });
+}
+
+function renderYesNoOptions(stepIndex, stepTitle) {
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'options-grid';
+
+    // YES button
+    const yesBtn = document.createElement('button');
+    yesBtn.className = 'opt-btn opt-btn-success';
+    yesBtn.innerHTML = '✅ YES — Problem Solved';
+    yesBtn.onclick = () => {
+        disableOptionContainer(optionsDiv, yesBtn);
+        addUserMessage('YES — Problem Solved');
+        flowSession.stepsHistory.push({ step: stepIndex + 1, title: stepTitle, response: 'SOLVED' });
+        showSolvedConfirmation();
+    };
+
+    // NO button
+    const noBtn = document.createElement('button');
+    noBtn.className = 'opt-btn';
+    noBtn.innerHTML = '❌ NO — Still Having Problem';
+    noBtn.onclick = () => {
+        disableOptionContainer(optionsDiv, noBtn);
+        addUserMessage('NO — Still Having Problem');
+        flowSession.stepsHistory.push({ step: stepIndex + 1, title: stepTitle, response: 'NOT_SOLVED' });
+        flowSession.consecutiveNegativeResponses += 1;
+
+        const cat = SUPPORT_CATEGORIES[flowSession.categoryKey];
+        const issue = cat.issues[flowSession.issueKey];
+        const threshold = issue.escalation_threshold || 2;
+
+        if (flowSession.consecutiveNegativeResponses >= threshold) {
+            promptAdminEscalation("We couldn't resolve your issue automatically through guided troubleshooting.");
+        } else {
+            setTimeout(() => {
+                presentTroubleshootingStep(stepIndex + 1);
+            }, 300);
+        }
+    };
+
+    // Explicit Contact Admin button (Always accessible)
+    const adminBtn = document.createElement('button');
+    adminBtn.className = 'opt-btn opt-btn-admin-cta';
+    adminBtn.innerHTML = '💬 Contact Admin Directly';
+    adminBtn.onclick = () => {
+        disableOptionContainer(optionsDiv, adminBtn);
+        addUserMessage('I want to contact Admin');
+        flowSession.stepsHistory.push({ step: stepIndex + 1, title: stepTitle, response: 'REQUESTED_ADMIN' });
+        promptAdminEscalation("You requested to connect with Admin Support directly.");
+    };
+
+    optionsDiv.appendChild(yesBtn);
+    optionsDiv.appendChild(noBtn);
+    optionsDiv.appendChild(adminBtn);
+    messagesContainer.appendChild(optionsDiv);
+    scrollToBottom();
+}
+
+function showSolvedConfirmation() {
+    setTimeout(() => {
+        addAssistantMessage("Great! We're glad we could help you resolve this issue.\n\nIs there anything else we can help you with today?", () => {
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'options-grid';
+
+            const newBtn = document.createElement('button');
+            newBtn.className = 'opt-btn';
+            newBtn.innerHTML = '🔄 Start Another Inquiry';
+            newBtn.onclick = () => {
+                window.location.href = "{% url 'technician_support' %}";
+            };
+
+            const dashBtn = document.createElement('button');
+            dashBtn.className = 'opt-btn btn-header-primary';
+            dashBtn.innerHTML = '🏠 Back to Dashboard';
+            dashBtn.onclick = () => {
+                window.location.href = "{% url 'technician_dashboard' %}";
+            };
+
+            optionsDiv.appendChild(newBtn);
+            optionsDiv.appendChild(dashBtn);
+            messagesContainer.appendChild(optionsDiv);
+            scrollToBottom();
+        });
+    }, 400);
+}
+
+function promptAdminEscalation(reason) {
+    const box = document.createElement('div');
+    box.className = 'escalation-box';
+    box.innerHTML = `
+        <h4>Need More Help?</h4>
+        <p>${reason}<br>Would you like to contact an Admin now?</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="escalateNowBtn" class="opt-btn opt-btn-admin-cta" onclick="executeEscalation('${reason.replace(/'/g, "\\'")}')">
+                🚨 Contact Admin Now
+            </button>
+            <button class="opt-btn" onclick="restartGuidedFlow()">
+                🔄 Try Another Solution
+            </button>
+        </div>
+    `;
+    messagesContainer.appendChild(box);
+    scrollToBottom();
+}
+
+function executeEscalation(reason) {
+    const btn = document.getElementById('escalateNowBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Connecting to Admin Support...';
+    }
+
+    const payload = {
+        category: flowSession.categoryKey || 'OTHER',
+        issue: flowSession.issueKey ? SUPPORT_CATEGORIES[flowSession.categoryKey].issues[flowSession.issueKey].title : 'General Inquiry',
+        subject: `Technician Support: ${flowSession.categoryKey || 'Issue'}`,
+        service_request_id: flowSession.attachedContext.serviceId || null,
+        wallet_transaction_id: flowSession.attachedContext.walletId || null,
+        withdrawal_id: flowSession.attachedContext.withdrawalId || null,
+        incentive_id: flowSession.attachedContext.incentiveId || null,
+        guided_steps: flowSession.stepsHistory,
+        escalation_reason: reason
+    };
+
+    fetch("{% url 'technician_support_api_escalate' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            activeTicketId = data.ticket_id;
+            activeTicketNumber = data.ticket_number;
+
+            // Transition chat naturally in the SAME full-page interface
+            transitionToLiveChat(data.ticket_number);
+            initLiveAdminChat(activeTicketId);
+
+            // Update URL cleanly without full page refresh
+            window.history.pushState({}, '', `?ticket=${activeTicketId}`);
+        } else {
+            alert("Escalation failed: " + (data.message || "Unknown error"));
+            if (btn) btn.disabled = false;
+        }
+    })
+    .catch(err => {
+        console.error("Escalation Error:", err);
+        alert("Failed to reach server. Please check your internet connection.");
+        if (btn) btn.disabled = false;
+    });
+}
+
+function restartGuidedFlow() {
+    flowSession.consecutiveNegativeResponses = 0;
+    flowSession.categoryKey = null;
+    flowSession.issueKey = null;
+    addAssistantMessage("No problem! Let's try another category. How can we help?", renderCategoryOptions);
+}
+
+// -------------------------------------------------------------
+// STAGE 2: LIVE TECHNICIAN <-> ADMIN CHAT (WebSockets)
+// -------------------------------------------------------------
+
+let supportSocket = null;
+let techReconnectTimer = null;
+let techReconnectAttempts = 0;
+
+function setTechChatStatus(state, message) {
+    const dot = document.getElementById('supportStatusDot');
+    const label = document.getElementById('statusLabelText');
+    const btn = document.getElementById('supportReconnectBtn');
+
+    if (state === 'connected') {
+        if (dot) dot.className = 'status-dot status-dot-green';
+        if (label) {
+            label.innerText = message || 'Connected to Live Admin Support';
+            label.style.color = '#16a34a';
+        }
+        if (btn) btn.style.display = 'none';
+        liveChatInput.disabled = false;
+        liveSendBtn.disabled = false;
+    } else if (state === 'reconnecting') {
+        if (dot) dot.className = 'status-dot status-dot-amber';
+        if (label) {
+            label.innerText = message || 'Reconnecting...';
+            label.style.color = '#d97706';
+        }
+        if (btn) {
+            btn.style.display = 'inline-block';
+            btn.innerText = 'Reconnect Now';
+            btn.onclick = function() { reconnectLiveChat(); };
+        }
+    } else if (state === 'session_expired') {
+        if (dot) dot.className = 'status-dot status-dot-red';
+        if (label) {
+            label.innerText = message || 'Session Expired — Please refresh page';
+            label.style.color = '#dc2626';
+        }
+        if (btn) {
+            btn.style.display = 'inline-block';
+            btn.innerText = 'Refresh Page';
+            btn.onclick = function() { window.location.reload(); };
+        }
+    } else {
+        if (dot) dot.className = 'status-dot status-dot-red';
+        if (label) {
+            label.innerText = message || 'Disconnected';
+            label.style.color = '#dc2626';
+        }
+        if (btn) {
+            btn.style.display = 'inline-block';
+            btn.innerText = 'Reconnect Now';
+            btn.onclick = function() { reconnectLiveChat(); };
+        }
+    }
+}
+
+function reconnectLiveChat() {
+    if (activeTicketId) {
+        initLiveAdminChat(activeTicketId);
+    }
+}
+
+function transitionToLiveChat(ticketNumber) {
+    document.getElementById('supportTitle').innerText = `Admin Support #${ticketNumber}`;
+    document.getElementById('supportAvatar').innerText = '👨‍💼';
+    setTechChatStatus('connected', 'Connected to Live Admin Support [OPEN]');
+
+    // Append system message in the chat
+    const sysRow = document.createElement('div');
+    sysRow.className = 'chat-row chat-row-system';
+    sysRow.innerHTML = `<div class="msg-system">Your request has been sent to Admin Support (Ticket #${ticketNumber}). An Admin will respond here.</div>`;
+    messagesContainer.appendChild(sysRow);
+
+    // Unlock live chat input
+    liveChatInput.disabled = false;
+    liveSendBtn.disabled = false;
+    liveChatInput.placeholder = "Type a message to Admin Support...";
+    liveChatInput.focus();
+    scrollToBottom();
+}
+
+function initLiveAdminChat(ticketId) {
+    if (!ticketId) return;
+    activeTicketId = ticketId;
+    clearTimeout(techReconnectTimer);
+
+    if (supportSocket) {
+        try {
+            supportSocket.onclose = null;
+            supportSocket.close();
+        } catch(e){}
+    }
+
+    const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const wsUrl = `${wsProtocol}${window.location.host}/ws/support/technician/${ticketId}/`;
+
+    setTechChatStatus('reconnecting', 'Connecting to Live Support...');
+
+    try {
+        supportSocket = new WebSocket(wsUrl);
+    } catch (err) {
+        console.error("WS constructor error:", err);
+        setTechChatStatus('disconnected', 'Connection Error');
+        return;
+    }
+
+    supportSocket.onopen = function() {
+        console.log("Technician Support WebSocket Connected ✅");
+        techReconnectAttempts = 0;
+        setTechChatStatus('connected', 'Connected to Live Admin Support');
+        // Send mark_read
+        supportSocket.send(JSON.stringify({ action: 'mark_read' }));
+    };
+
+    supportSocket.onmessage = function(e) {
+        try {
+            const data = JSON.parse(e.data);
+
+            if (data.type === 'support_chat_message') {
+                const isSentByMe = (data.sender_username === currentTechnicianUsername);
+                appendChatMessageBubble(data.message, isSentByMe, data.sender_role, data.created_at);
+            } else if (data.type === 'ticket_status_updated') {
+                const sysRow = document.createElement('div');
+                sysRow.className = 'chat-row chat-row-system';
+                sysRow.innerHTML = `<div class="msg-system">${data.message || 'Status updated to ' + data.status_display}</div>`;
+                messagesContainer.appendChild(sysRow);
+                setTechChatStatus('connected', `Live Support [${data.status_display}]`);
+                scrollToBottom();
+            }
+        } catch (err) {
+            console.error("WS Parse Error:", err);
+        }
+    };
+
+    supportSocket.onclose = function(e) {
+        console.warn("Support WebSocket closed:", e.code, e.reason);
+        if (e.code === 4401) {
+            setTechChatStatus('session_expired', 'Session Expired — Please refresh page');
+            return;
+        }
+        if (e.code === 4403) {
+            setTechChatStatus('disconnected', 'Access Denied: Not authorized for this ticket');
+            return;
+        }
+
+        techReconnectAttempts++;
+        const delay = Math.min(1000 * Math.pow(1.4, techReconnectAttempts), 8000);
+        setTechChatStatus('reconnecting', `Disconnected — Reconnecting in ${Math.round(delay/1000)}s...`);
+        techReconnectTimer = setTimeout(() => {
+            if (activeTicketId) initLiveAdminChat(activeTicketId);
+        }, delay);
+    };
+
+    supportSocket.onerror = function(err) {
+        console.error("Support WebSocket error:", err);
+    };
+
+    liveSendBtn.onclick = sendLiveMessage;
+    liveChatInput.onkeyup = function(e) {
+        if (e.key === 'Enter') sendLiveMessage();
+    };
+}
+
+function sendLiveMessage() {
+    const text = liveChatInput.value.trim();
+    if (!text) return;
+
+    if (supportSocket && supportSocket.readyState === WebSocket.OPEN) {
+        supportSocket.send(JSON.stringify({ message: text }));
+        liveChatInput.value = '';
+    } else {
+        const row = document.createElement('div');
+        row.className = 'chat-row chat-row-system';
+        row.innerHTML = `<div class="msg-system" style="background:#fffbeb; color:#b45309; border:1px solid #fef3c7;">Chat is offline. Reconnecting now... Please try again.</div>`;
+        messagesContainer.appendChild(row);
+        scrollToBottom();
+        reconnectLiveChat();
+    }
+}
+
+function appendChatMessageBubble(text, isMe, role, timestamp) {
+    const row = document.createElement('div');
+    row.className = 'chat-row ' + (isMe ? 'chat-row-user' : 'chat-row-assistant');
+
+    const bubble = document.createElement('div');
+    if (isMe) {
+        bubble.className = 'msg-bubble msg-user';
+        bubble.innerHTML = `<span class="sender-tag">You (Technician)</span>${escapeHtml(text)}<span class="msg-meta">${timestamp || 'Just now'}</span>`;
+    } else if (role === 'ADMIN') {
+        bubble.className = 'msg-bubble msg-admin';
+        bubble.innerHTML = `<span class="sender-tag">Admin Support</span>${escapeHtml(text)}<span class="msg-meta">${timestamp || 'Just now'}</span>`;
+    } else {
+        bubble.className = 'msg-bubble msg-assistant';
+        bubble.innerHTML = `<span class="sender-tag">Support</span>${escapeHtml(text)}<span class="msg-meta">${timestamp || 'Just now'}</span>`;
+    }
+
+    row.appendChild(bubble);
+    messagesContainer.appendChild(row);
+    scrollToBottom();
+}
+
+// -------------------------------------------------------------
+// UI HELPERS & CONTEXT HANDLERS
+// -------------------------------------------------------------
+
+function addAssistantMessage(markdownText, callback) {
+    const row = document.createElement('div');
+    row.className = 'chat-row chat-row-assistant';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble msg-assistant';
+
+    // Simple markdown formatting for bold and italic
+    let formatted = escapeHtml(markdownText)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n\n/g, '<br><br>')
+        .replace(/\n/g, '<br>');
+
+    bubble.innerHTML = formatted;
+    row.appendChild(bubble);
+    messagesContainer.appendChild(row);
+    scrollToBottom();
+
+    if (callback) callback();
+}
+
+function addUserMessage(text) {
+    const row = document.createElement('div');
+    row.className = 'chat-row chat-row-user';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble msg-user';
+    bubble.innerText = text;
+
+    row.appendChild(bubble);
+    messagesContainer.appendChild(row);
+    scrollToBottom();
+}
+
+function addContextCardPreview(ctx) {
+    const card = document.createElement('div');
+    card.className = 'service-context-card';
+    card.innerHTML = `
+        <div class="service-card-info">
+            <h4>Attached Service: ${escapeHtml(ctx.serviceCategory)}</h4>
+            <p>Customer: <strong>${escapeHtml(ctx.customerName)}</strong> • Booking: #SB-${parseInt(ctx.serviceId) + 1000}</p>
+            <p>Amount: ₹${ctx.amount} • Status: ${escapeHtml(ctx.status)}</p>
+        </div>
+        <span class="service-badge">REQ-${ctx.serviceId}</span>
+    `;
+    messagesContainer.appendChild(card);
+    scrollToBottom();
+}
+
+function disableOptionContainer(container, selectedBtn) {
+    const buttons = container.querySelectorAll('.opt-btn');
+    buttons.forEach(btn => {
+        btn.disabled = true;
+        if (btn === selectedBtn) {
+            btn.classList.add('opt-btn-selected');
+        }
+    });
+}
+
+function openServicesDrawer() {
+    document.getElementById('servicesDrawer').classList.add('open');
+    document.getElementById('servicesDrawerBackdrop').style.display = 'block';
+}
+
+function closeServicesDrawer() {
+    document.getElementById('servicesDrawer').classList.remove('open');
+    document.getElementById('servicesDrawerBackdrop').style.display = 'none';
+}
+
+function attachServiceContext(id, category, customer, amount, status) {
+    closeServicesDrawer();
+    flowSession.attachedContext.serviceId = id;
+    flowSession.attachedContext.serviceCategory = category;
+    flowSession.attachedContext.customerName = customer;
+    flowSession.attachedContext.amount = amount;
+    flowSession.attachedContext.status = status;
+
+    addUserMessage(`Attached Job: ${category} (Customer: ${customer}, ₹${amount})`);
+    addContextCardPreview(flowSession.attachedContext);
+
+    setTimeout(() => {
+        addAssistantMessage(`Got it! What issue are you facing regarding this ${category} service?`, () => {
+            renderPreselectedServiceOptions();
+        });
+    }, 300);
+}
+
+function fetchAndSelectFinancialContext(type) {
+    fetch(`{% url 'technician_support_api_context' %}?type=${type}`)
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === 'success' && res.data.length > 0) {
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'options-grid';
+
+                res.data.slice(0, 5).forEach(item => {
+                    const btn = document.createElement('button');
+                    btn.className = 'opt-btn';
+                    btn.innerHTML = type === 'wallet' 
+                        ? `<span>${item.type}: ${item.amount} (${item.description})</span>`
+                        : `<span>Payout: ${item.amount} [${item.status}] - ${item.date}</span>`;
+
+                    btn.onclick = () => {
+                        disableOptionContainer(optionsDiv, btn);
+                        if (type === 'wallet') flowSession.attachedContext.walletId = item.id;
+                        if (type === 'withdrawals') flowSession.attachedContext.withdrawalId = item.id;
+                        addUserMessage(`Attached Record: ${item.amount}`);
+                        renderIssueOptions(flowSession.categoryKey);
+                    };
+                    optionsDiv.appendChild(btn);
+                });
+
+                messagesContainer.appendChild(optionsDiv);
+                scrollToBottom();
+            } else {
+                addAssistantMessage(`No recent ${type} records found. Let's continue with general troubleshooting.`, () => {
+                    renderIssueOptions(flowSession.categoryKey);
+                });
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            renderIssueOptions(flowSession.categoryKey);
+        });
+}
+
+function openCustomModal() {
+    document.getElementById('customInputModal').style.display = 'flex';
+}
+function closeCustomModal() {
+    document.getElementById('customInputModal').style.display = 'none';
+}
+function submitCustomIssue(mode) {
+    const text = document.getElementById('customIssueInput').value.trim();
+    if (!text) {
+        alert("Please enter a brief description.");
+        return;
+    }
+    closeCustomModal();
+    flowSession.categoryKey = 'OTHER';
+    flowSession.issueKey = 'custom_inquiry';
+    addUserMessage(text);
+
+    if (mode === 'admin') {
+        promptAdminEscalation(`Technician inquiry: ${text}`);
+    } else {
+        addAssistantMessage("Thank you for the information. Our self-check guidelines for general inquiries:\n\n1. Check your network and permissions\n2. Verify that your app is up to date\n3. Review recent booking statuses", () => {
+            renderYesNoOptions(0, "General Self-Check");
+        });
+    }
+}
+
+function getCSRFToken() {
+    return document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1] || '';
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.innerText = text;
+    return div.innerHTML;
+}
+
+// Auto-start on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    initGuidedFlow();
+});
+</script>
+{% endblock %}
+

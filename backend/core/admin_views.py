@@ -649,3 +649,166 @@ from core.models import ReferralLog
 def admin_referrals_list(request):
     referrals = ReferralLog.objects.select_related('referrer', 'referrer__user', 'referee', 'referee__user').order_by('-created_at')
     return render(request, 'admin_custom/referrals_list.html', {'referrals': referrals})
+
+
+# ==========================================
+# ADMIN TECHNICIAN SUPPORT DESK
+# ==========================================
+from django.utils import timezone
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from core.models import TechnicianSupportTicket, TechnicianSupportMessage
+
+@superuser_required
+def admin_technician_support_list(request):
+    """
+    Super Admin list view for escalated Technician Support Tickets.
+    """
+    query = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    category_filter = request.GET.get('category', '').strip()
+
+    tickets = TechnicianSupportTicket.objects.select_related(
+        'technician',
+        'related_service_request',
+        'related_service_request__service_detail'
+    ).prefetch_related('messages').order_by('-created_at')
+
+    if query:
+        tickets = tickets.filter(
+            TechnicianSupportTicket.objects.filter(
+                technician__username__icontains=query
+            ) | tickets.filter(
+                ticket_number__icontains=query
+            ) | tickets.filter(
+                issue__icontains=query
+            ) | tickets.filter(
+                subject__icontains=query
+            )
+        ).distinct()
+
+    if status_filter:
+        tickets = tickets.filter(status=status_filter)
+
+    if category_filter:
+        tickets = tickets.filter(category=category_filter)
+
+    # Metrics
+    open_count = TechnicianSupportTicket.objects.filter(status='OPEN').count()
+    in_progress_count = TechnicianSupportTicket.objects.filter(status='IN_PROGRESS').count()
+    resolved_count = TechnicianSupportTicket.objects.filter(status='RESOLVED').count()
+
+    paginator = Paginator(tickets, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Tag tickets with unread technician message indicators
+    for ticket in page_obj:
+        ticket.has_unread_tech_msg = ticket.messages.filter(sender_role='TECHNICIAN', is_read=False).exists()
+
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+        'status_filter': status_filter,
+        'category_filter': category_filter,
+        'open_count': open_count,
+        'in_progress_count': in_progress_count,
+        'resolved_count': resolved_count,
+        'categories': TechnicianSupportTicket.CATEGORY_CHOICES,
+        'statuses': TechnicianSupportTicket.STATUS_CHOICES,
+    }
+    return render(request, 'admin_custom/technician_support_list.html', context)
+
+
+@superuser_required
+def admin_technician_support_detail(request, ticket_id):
+    """
+    Super Admin detail view & real-time chat for a specific Technician Support Ticket.
+    Displays ticket metadata, attached service/financial context, guided history log, and live chat.
+    """
+    ticket = get_object_or_404(
+        TechnicianSupportTicket.objects.select_related(
+            'technician',
+            'technician__user',
+            'related_service_request',
+            'related_service_request__service_detail',
+            'related_service_request__service_address',
+            'related_wallet_transaction',
+            'related_withdrawal',
+            'related_incentive'
+        ),
+        id=ticket_id
+    )
+
+    # Mark incoming technician messages as read when admin opens the desk
+    ticket.messages.filter(sender_role='TECHNICIAN', is_read=False).update(
+        is_read=True,
+        read_at=timezone.now()
+    )
+
+    messages_list = ticket.messages.all().order_by('created_at')
+
+    context = {
+        'ticket': ticket,
+        'messages_list': messages_list,
+        'statuses': TechnicianSupportTicket.STATUS_CHOICES,
+        'priorities': TechnicianSupportTicket.PRIORITY_CHOICES,
+    }
+    return render(request, 'admin_custom/technician_support_detail.html', context)
+
+
+@superuser_required
+def admin_technician_support_update_status(request, ticket_id):
+    """
+    Super Admin endpoint to change ticket status or save administrative notes.
+    """
+    if request.method != 'POST':
+        return redirect('admin_technician_support_detail', ticket_id=ticket_id)
+
+    ticket = get_object_or_404(TechnicianSupportTicket, id=ticket_id)
+    new_status = request.POST.get('status')
+    admin_notes = request.POST.get('admin_notes', '').strip()
+
+    valid_statuses = [choice[0] for choice in TechnicianSupportTicket.STATUS_CHOICES]
+    if new_status in valid_statuses:
+        old_status_display = ticket.get_status_display()
+        ticket.status = new_status
+        if new_status in ['RESOLVED', 'CLOSED']:
+            ticket.closed_at = timezone.now()
+        ticket.admin_notes = admin_notes
+        ticket.assigned_admin = request.user
+        ticket.save()
+
+        status_display = ticket.get_status_display()
+
+        # Add system message to the chat log
+        system_msg_text = f"Admin {request.user.username} updated ticket status from '{old_status_display}' to '{status_display}'."
+        if admin_notes:
+            system_msg_text += f" Resolution notes: {admin_notes}"
+
+        TechnicianSupportMessage.objects.create(
+            ticket=ticket,
+            sender=request.user,
+            sender_role='SYSTEM',
+            message=system_msg_text
+        )
+
+        # Broadcast via Channel Layer to the active WebSocket room
+        try:
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"technician_support_{ticket.id}",
+                {
+                    'type': 'ticket_status_updated',
+                    'new_status': ticket.status,
+                    'status_display': status_display,
+                    'message': system_msg_text
+                }
+            )
+        except Exception as e:
+            print("Channel layer broadcast notice:", e)
+
+        messages.success(request, f"Ticket #{ticket.ticket_number} status updated to {status_display}.")
+
+    return redirect('admin_technician_support_detail', ticket_id=ticket.id)
+

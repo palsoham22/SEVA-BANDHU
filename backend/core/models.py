@@ -65,6 +65,7 @@ class Technician_signup(models.Model):
     years_of_experience = models.IntegerField(blank=True, null=True)
     working_locations = models.CharField(max_length=500, blank=True, null=True)  # Comma-separated cities
     profile_completed = models.BooleanField(default=False)
+    wallet_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     class Meta:
         db_table = 'Technician_signup'
@@ -514,3 +515,165 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"Msg by {self.sender.username} at {self.created_at}"
+
+
+# ==========================================
+# TECHNICIAN FINANCIAL & SUPPORT MODELS
+# ==========================================
+
+class TechnicianWalletTransaction(models.Model):
+    TRANSACTION_TYPES = (
+        ('CREDIT', 'Credit'),
+        ('DEBIT', 'Debit')
+    )
+    technician = models.ForeignKey(Technician_signup, on_delete=models.CASCADE, related_name='wallet_transactions')
+    service_request = models.ForeignKey('ServiceRequest', on_delete=models.SET_NULL, null=True, blank=True, related_name='technician_transactions')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
+    description = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'TechnicianWalletTransaction'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.transaction_type} of ₹{self.amount} for {self.technician.username}"
+
+
+class TechnicianWithdrawal(models.Model):
+    STATUS_CHOICES = (
+        ('PENDING', 'Pending'),
+        ('PROCESSING', 'Processing'),
+        ('COMPLETED', 'Completed'),
+        ('FAILED', 'Failed')
+    )
+    technician = models.ForeignKey(Technician_signup, on_delete=models.CASCADE, related_name='withdrawals')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payout_method = models.CharField(max_length=50, default='Bank Transfer')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    reference_id = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'TechnicianWithdrawal'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Withdrawal #{self.id} (₹{self.amount}) - {self.technician.username} [{self.status}]"
+
+
+class TechnicianIncentive(models.Model):
+    INCENTIVE_TYPES = (
+        ('FIVE_STAR_BONUS', '5-Star Rating Reward'),
+        ('MISSION_COMPLETION', 'Mission / Milestone Bonus'),
+        ('WEEKLY_TOP_PERFORMER', 'Weekly Top Performer'),
+        ('OTHER', 'Special Reward')
+    )
+    STATUS_CHOICES = (
+        ('EARNED', 'Earned'),
+        ('CREDITED', 'Credited to Wallet'),
+        ('PENDING_APPROVAL', 'Pending Approval')
+    )
+    technician = models.ForeignKey(Technician_signup, on_delete=models.CASCADE, related_name='incentives')
+    title = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    incentive_type = models.CharField(max_length=50, choices=INCENTIVE_TYPES, default='MISSION_COMPLETION')
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='CREDITED')
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'TechnicianIncentive'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} (₹{self.amount}) - {self.technician.username}"
+
+
+class TechnicianSupportTicket(models.Model):
+    CATEGORY_CHOICES = (
+        ('PAYMENT_EARNINGS', 'Payment / Earnings'),
+        ('SERVICE_BOOKING', 'Service / Booking'),
+        ('WALLET_WITHDRAWAL', 'Wallet / Withdrawal'),
+        ('INCENTIVE_REWARD', 'Incentive / Reward'),
+        ('APP_TECHNICAL', 'App / Technical Issue'),
+        ('ACCOUNT_PROFILE', 'Account / Profile'),
+        ('OTHER', 'Other')
+    )
+    STATUS_CHOICES = (
+        ('OPEN', 'Open'),
+        ('IN_PROGRESS', 'In Progress'),
+        ('RESOLVED', 'Resolved'),
+        ('CLOSED', 'Closed')
+    )
+    PRIORITY_CHOICES = (
+        ('LOW', 'Low'),
+        ('MEDIUM', 'Medium'),
+        ('HIGH', 'High'),
+        ('URGENT', 'Urgent')
+    )
+
+    ticket_number = models.CharField(max_length=30, unique=True, blank=True)
+    technician = models.ForeignKey(Technician_signup, on_delete=models.CASCADE, related_name='support_tickets')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    issue = models.CharField(max_length=255)
+    subject = models.CharField(max_length=255)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='OPEN')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='MEDIUM')
+
+    # Associated contextual records
+    related_service_request = models.ForeignKey('ServiceRequest', on_delete=models.SET_NULL, null=True, blank=True, related_name='technician_support_tickets')
+    related_wallet_transaction = models.ForeignKey(TechnicianWalletTransaction, on_delete=models.SET_NULL, null=True, blank=True, related_name='support_tickets')
+    related_withdrawal = models.ForeignKey(TechnicianWithdrawal, on_delete=models.SET_NULL, null=True, blank=True, related_name='support_tickets')
+    related_incentive = models.ForeignKey(TechnicianIncentive, on_delete=models.SET_NULL, null=True, blank=True, related_name='support_tickets')
+
+    # Preserved guided troubleshooting state & history
+    guided_flow_state = models.JSONField(default=list, blank=True)
+    escalation_reason = models.TextField(blank=True, null=True)
+    admin_notes = models.TextField(blank=True, null=True)
+    assigned_admin = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_technician_tickets')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    escalated_at = models.DateTimeField(auto_now_add=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'TechnicianSupportTicket'
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if not self.ticket_number:
+            self.ticket_number = f"TS-{1000 + self.id}"
+            super().save(update_fields=['ticket_number'])
+
+    def __str__(self):
+        return f"{self.ticket_number or f'#ID-{self.id}'} - {self.technician.username} [{self.get_status_display()}]"
+
+
+class TechnicianSupportMessage(models.Model):
+    ROLE_CHOICES = (
+        ('TECHNICIAN', 'Technician'),
+        ('ADMIN', 'Admin'),
+        ('SYSTEM', 'System')
+    )
+
+    ticket = models.ForeignKey(TechnicianSupportTicket, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    sender_role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='TECHNICIAN')
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'TechnicianSupportMessage'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Msg #{self.id} on {self.ticket.ticket_number} by {self.sender.username} ({self.sender_role})"
+

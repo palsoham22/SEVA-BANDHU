@@ -1,0 +1,175 @@
+{% extends 'admin_custom/base_admin.html' %}
+
+{% block title %}Technician Support Desk | Super Admin{% endblock %}
+
+{% block content %}
+<div class="page-title-box" style="margin-bottom: 24px;">
+    <h2>Technician Support Desk</h2>
+    <p>Monitor, troubleshoot, and resolve escalated inquiries from certified technicians.</p>
+</div>
+
+<!-- Metrics Overview -->
+<div class="metrics-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px;">
+    <div class="stat-card" style="background: #ffffff; border: 1px solid #fed7aa; border-radius: 14px; padding: 20px; display: flex; align-items: center; gap: 16px;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: #ea580c; color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800;">
+            ⏳
+        </div>
+        <div>
+            <div style="font-size: 26px; font-weight: 800; color: #9a3412;">{{ open_count }}</div>
+            <div style="font-size: 13px; font-weight: 600; color: #c2410c;">Open Escalations</div>
+        </div>
+    </div>
+
+    <div class="stat-card" style="background: #ffffff; border: 1px solid #ddd6fe; border-radius: 14px; padding: 20px; display: flex; align-items: center; gap: 16px;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: #7c3aed; color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800;">
+            💬
+        </div>
+        <div>
+            <div style="font-size: 26px; font-weight: 800; color: #5b21b6;">{{ in_progress_count }}</div>
+            <div style="font-size: 13px; font-weight: 600; color: #6d28d9;">In Progress (Active Chat)</div>
+        </div>
+    </div>
+
+    <div class="stat-card" style="background: #ffffff; border: 1px solid #a7f3d0; border-radius: 14px; padding: 20px; display: flex; align-items: center; gap: 16px;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: #059669; color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800;">
+            ✓
+        </div>
+        <div>
+            <div style="font-size: 26px; font-weight: 800; color: #065f46;">{{ resolved_count }}</div>
+            <div style="font-size: 13px; font-weight: 600; color: #047857;">Resolved Tickets</div>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter Controls -->
+<form method="GET" class="search-bar" style="margin-bottom: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search by ticket #, technician, issue..." style="flex: 1; min-width: 240px;">
+    
+    <select name="status">
+        <option value="">All Statuses</option>
+        {% for s_val, s_label in statuses %}
+        <option value="{{ s_val }}" {% if status_filter == s_val %}selected{% endif %}>{{ s_label }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="category">
+        <option value="">All Categories</option>
+        {% for c_val, c_label in categories %}
+        <option value="{{ c_val }}" {% if category_filter == c_val %}selected{% endif %}>{{ c_label }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-primary">Filter</button>
+    {% if query or status_filter or category_filter %}
+    <a href="{% url 'admin_technician_support_list' %}" class="btn btn-secondary">Clear</a>
+    {% endif %}
+</form>
+
+<!-- Tickets Table -->
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Ticket ID</th>
+                <th>Technician</th>
+                <th>Category & Issue</th>
+                <th>Attached Context</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Escalated At</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in page_obj %}
+            <tr>
+                <td>
+                    <strong style="font-family:'Plus Jakarta Sans',sans-serif; color:#0f172a;">#{{ ticket.ticket_number }}</strong>
+                    {% if ticket.has_unread_tech_msg %}
+                    <span style="display:inline-block; width:8px; height:8px; background:#dc2626; border-radius:50%; margin-left:4px;" title="Unread technician message"></span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="font-weight: 700; color: #0f172a;">{{ ticket.technician.username }}</div>
+                    <span style="font-size: 11.5px; color: #64748b;">{{ ticket.technician.service_category|default:"Technician" }}</span>
+                </td>
+                <td>
+                    <div style="font-weight: 600; color: #1e293b; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        {{ ticket.issue }}
+                    </div>
+                    <span style="font-size: 11.5px; color: #64748b;">{{ ticket.get_category_display }}</span>
+                </td>
+                <td>
+                    {% if ticket.related_service_request %}
+                    <span class="badge badge-info" title="Attached Service Request">
+                        Job #SB-{{ ticket.related_service_request.id|add:1000 }} ({{ ticket.related_service_request.service_detail.service_category }})
+                    </span>
+                    {% elif ticket.related_withdrawal %}
+                    <span class="badge badge-warning" title="Attached Withdrawal">
+                        Withdrawal: ₹{{ ticket.related_withdrawal.amount }}
+                    </span>
+                    {% elif ticket.related_wallet_transaction %}
+                    <span class="badge badge-info" title="Attached Wallet Transaction">
+                        Wallet Tx: ₹{{ ticket.related_wallet_transaction.amount }}
+                    </span>
+                    {% elif ticket.related_incentive %}
+                    <span class="badge badge-success" title="Attached Incentive">
+                        Incentive: {{ ticket.related_incentive.title }}
+                    </span>
+                    {% else %}
+                    <span style="color: #94a3b8; font-size: 12px;">None</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if ticket.priority == 'URGENT' or ticket.priority == 'HIGH' %}
+                    <span class="badge badge-danger">{{ ticket.priority }}</span>
+                    {% else %}
+                    <span class="badge" style="background:#f1f5f9; color:#475569;">{{ ticket.priority }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if ticket.status == 'OPEN' %}
+                    <span class="badge badge-warning">OPEN</span>
+                    {% elif ticket.status == 'IN_PROGRESS' %}
+                    <span class="badge" style="background:#ede9fe; color:#6d28d9; border:1px solid #ddd6fe;">IN PROGRESS</span>
+                    {% elif ticket.status == 'RESOLVED' %}
+                    <span class="badge badge-success">RESOLVED</span>
+                    {% else %}
+                    <span class="badge" style="background:#f1f5f9; color:#475569;">CLOSED</span>
+                    {% endif %}
+                </td>
+                <td style="font-size: 12.5px; color: #64748b;">
+                    {{ ticket.escalated_at|date:"d M Y, h:i A" }}
+                </td>
+                <td>
+                    <a href="{% url 'admin_technician_support_detail' ticket.id %}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">
+                        Open Desk &rarr;
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 48px; color: #94a3b8;">
+                    No technician support tickets match your filter criteria.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}&status={{ status_filter }}&category={{ category_filter }}">&laquo; Prev</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}&q={{ query }}&status={{ status_filter }}&category={{ category_filter }}">Next &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}
+

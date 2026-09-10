@@ -9,6 +9,7 @@ constantly==23.10.4
 cryptography==47.0.0
 daphne==4.2.1
 uvicorn==0.52.4
+websockets>=13.0
 dj-database-url==3.1.2
 Django==5.2.7
 hyperlink==21.0.0

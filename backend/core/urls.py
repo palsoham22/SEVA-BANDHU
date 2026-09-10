@@ -27,6 +27,10 @@ urlpatterns = [
     path('technician/dismiss-notification/<int:id>/',views.dismiss_notification,name='dismiss_notification'),
     path('technician/navigation/<int:id>/',views.technician_navigation,name='technician_navigation'),
     path('technician/chat/<int:request_id>/', views.technician_chat, name='technician_chat'),
+    path('technician/support/', views.technician_support, name='technician_support'),
+    path('technician/support/api/context/', views.technician_support_api_context, name='technician_support_api_context'),
+    path('technician/support/api/escalate/', views.technician_support_api_escalate, name='technician_support_api_escalate'),
+    path('technician/support/history/', views.technician_support_history, name='technician_support_history'),
 
     # Customer
     path('customer/dashboard/', views.customer_dashboard, name='customer_dashboard'),
@@ -96,6 +100,9 @@ urlpatterns = [
     
     path('super-admin/support-tickets/', admin_views.admin_support_tickets_list, name='admin_support_tickets_list'),
     path('super-admin/support-tickets/<int:id>/action/', admin_views.admin_support_ticket_action, name='admin_support_ticket_action'),
+    path('super-admin/technician-support/', admin_views.admin_technician_support_list, name='admin_technician_support_list'),
+    path('super-admin/technician-support/<int:ticket_id>/', admin_views.admin_technician_support_detail, name='admin_technician_support_detail'),
+    path('super-admin/technician-support/<int:ticket_id>/status/', admin_views.admin_technician_support_update_status, name='admin_technician_support_update_status'),
 ]
 
 # 🔥 VERY IMPORTANT — SERVE IMAGES
