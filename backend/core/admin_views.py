@@ -477,6 +477,14 @@ def admin_support_ticket_action(request, id):
             
     return redirect('admin_support_tickets_list')
 
+# --- INCOME & BUSINESS ANALYTICS ---
+@superuser_required
+def admin_income_analytics(request):
+    from core.services.admin_income_analytics_service import get_full_income_analytics_context
+    context = get_full_income_analytics_context(request)
+    return render(request, 'admin_custom/income_analytics.html', context)
+
+
 # --- PLATFORM ANALYTICS ---
 @superuser_required
 def admin_platform_analytics(request):
