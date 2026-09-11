@@ -1,0 +1,1154 @@
+{% extends "admin_custom/base_admin.html" %}
+
+{% block content %}
+<style>
+    /* Analytics Base & Typography */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .dashboard-header h1 {
+        font-size: 26px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+        margin: 0 0 6px 0;
+    }
+    .dashboard-header p {
+        color: #64748b;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    /* Date Filter Toolbar */
+    .filter-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 14px 18px;
+        margin-bottom: 28px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+    .preset-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+    }
+    .btn-preset {
+        padding: 7px 13px;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 600;
+        text-decoration: none;
+        color: #475569;
+        background: #f1f5f9;
+        border: 1px solid transparent;
+        transition: all 0.15s ease;
+    }
+    .btn-preset:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+    .btn-preset.active {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #1d4ed8;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+    .custom-range-form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .custom-range-form input[type="date"] {
+        padding: 7px 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-family: inherit;
+        background: #f8fafc;
+        color: #1e293b;
+    }
+    .btn-apply {
+        padding: 7px 15px;
+        background: #0f172a;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+    .btn-apply:hover {
+        background: #334155;
+    }
+
+    /* KPI Cards Grid */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+    .kpi-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+    }
+    .kpi-label {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .kpi-value {
+        font-size: 26px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+    }
+    .kpi-subtext {
+        font-size: 12px;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .delta-badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+    }
+    .delta-up { background: #dcfce7; color: #166534; }
+    .delta-down { background: #fee2e2; color: #991b1b; }
+    .delta-neutral { background: #f1f5f9; color: #475569; }
+
+    .card-accent-blue { border-top: 4px solid #2563eb; }
+    .card-accent-emerald { border-top: 4px solid #10b981; }
+    .card-accent-indigo { border-top: 4px solid #6366f1; }
+    .card-accent-amber { border-top: 4px solid #f59e0b; }
+    .card-accent-purple { border-top: 4px solid #8b5cf6; }
+    .card-accent-rose { border-top: 4px solid #f43f5e; }
+
+    /* Interactive Section Tabs */
+    .tab-nav {
+        display: flex;
+        gap: 6px;
+        border-bottom: 2px solid #e2e8f0;
+        margin-bottom: 24px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+    .tab-btn {
+        padding: 10px 18px;
+        border: none;
+        background: transparent;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #64748b;
+        cursor: pointer;
+        border-radius: 8px 8px 0 0;
+        position: relative;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .tab-btn:hover {
+        color: #0f172a;
+        background: #f8fafc;
+    }
+    .tab-btn.active {
+        color: #2563eb;
+        background: #eff6ff;
+    }
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #2563eb;
+        border-radius: 3px 3px 0 0;
+    }
+
+    .tab-pane {
+        display: none;
+    }
+    .tab-pane.active {
+        display: block;
+        animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards & Containers */
+    .content-box {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 22px;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .content-box-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 16px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Grid Layouts */
+    .grid-2col {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+    }
+    @media (max-width: 1024px) {
+        .grid-2col { grid-template-columns: 1fr; }
+    }
+
+    .grid-halves {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+    @media (max-width: 900px) {
+        .grid-halves { grid-template-columns: 1fr; }
+    }
+
+    /* Tables */
+    .sb-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+    }
+    .sb-table th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 11.5px;
+        letter-spacing: 0.04em;
+        padding: 12px 14px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .sb-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #1e293b;
+        vertical-align: middle;
+    }
+    .sb-table tr:hover td {
+        background: #f8fafc;
+    }
+
+    /* Financial Ledger Row Types */
+    .ledger-inflow { color: #15803d; font-weight: 700; }
+    .ledger-outflow { color: #b91c1c; font-weight: 700; }
+    .ledger-net { color: #2563eb; font-weight: 800; font-size: 14px; }
+    .ledger-cash { color: #64748b; font-weight: 700; }
+
+    /* Star Rating Widget */
+    .star-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+        font-size: 13px;
+    }
+    .star-bar-container {
+        flex-grow: 1;
+        height: 10px;
+        background: #f1f5f9;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    .star-bar-fill {
+        height: 100%;
+        background: #f59e0b;
+        border-radius: 6px;
+        transition: width 0.5s ease;
+    }
+
+    /* Empty states */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+    }
+    .empty-state svg {
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+</style>
+
+<div class="content-main">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div>
+            <h1>Income &amp; Business Analytics</h1>
+            <p>Comprehensive Gross Sales, Platform Net Income, Bookings, Technician Scorecards &amp; Ledger Auditing</p>
+        </div>
+        <div>
+            <span class="badge badge-info" style="font-size: 13px; padding: 6px 14px;">
+                Active Filter: <strong>{{ date_label }}</strong>
+            </span>
+        </div>
+    </div>
+
+    <!-- Date Range Filter Bar -->
+    <div class="filter-card">
+        <div class="preset-group">
+            <span style="font-size: 12px; font-weight: 700; color: #64748b; margin-right: 4px;">Timeframe:</span>
+            <a href="?preset=today" class="btn-preset {% if preset == 'today' %}active{% endif %}">Today</a>
+            <a href="?preset=yesterday" class="btn-preset {% if preset == 'yesterday' %}active{% endif %}">Yesterday</a>
+            <a href="?preset=last_7_days" class="btn-preset {% if preset == 'last_7_days' %}active{% endif %}">7 Days</a>
+            <a href="?preset=last_30_days" class="btn-preset {% if preset == 'last_30_days' %}active{% endif %}">30 Days</a>
+            <a href="?preset=this_month" class="btn-preset {% if preset == 'this_month' %}active{% endif %}">This Month</a>
+            <a href="?preset=previous_month" class="btn-preset {% if preset == 'previous_month' %}active{% endif %}">Prev Month</a>
+            <a href="?preset=this_year" class="btn-preset {% if preset == 'this_year' %}active{% endif %}">This Year</a>
+            <a href="?preset=all_time" class="btn-preset {% if preset == 'all_time' %}active{% endif %}">All Time</a>
+        </div>
+
+        <form method="GET" action="" class="custom-range-form">
+            <input type="hidden" name="preset" value="custom">
+            <label style="font-size: 12px; font-weight: 600; color: #64748b;">Custom:</label>
+            <input type="date" name="start_date" value="{{ start_date_str }}" required>
+            <span style="color: #94a3b8;">–</span>
+            <input type="date" name="end_date" value="{{ end_date_str }}" required>
+            <button type="submit" class="btn-apply">Filter</button>
+        </form>
+    </div>
+
+    <!-- Top KPI Cards -->
+    <div class="kpi-grid">
+        <!-- 1. Total Gross Sales (GMV) -->
+        <div class="kpi-card card-accent-blue">
+            <div class="kpi-label">
+                <span>Total Gross Sales (GMV)</span>
+                <span class="delta-badge {% if kpi.deltas.gross_sales.direction == 'up' %}delta-up{% elif kpi.deltas.gross_sales.direction == 'down' %}delta-down{% else %}delta-neutral{% endif %}">
+                    {{ kpi.deltas.gross_sales.formatted }}
+                </span>
+            </div>
+            <div class="kpi-value">₹{{ kpi.gross_sales }}</div>
+            <div class="kpi-subtext">All customer bookings initiated</div>
+        </div>
+
+        <!-- 2. Realized Sales -->
+        <div class="kpi-card card-accent-emerald">
+            <div class="kpi-label">
+                <span>Realized Sales</span>
+                <span class="delta-badge {% if kpi.deltas.realized_sales.direction == 'up' %}delta-up{% elif kpi.deltas.realized_sales.direction == 'down' %}delta-down{% else %}delta-neutral{% endif %}">
+                    {{ kpi.deltas.realized_sales.formatted }}
+                </span>
+            </div>
+            <div class="kpi-value">₹{{ kpi.realized_sales }}</div>
+            <div class="kpi-subtext">Cash collected on completed jobs</div>
+        </div>
+
+        <!-- 3. Platform Gross Income -->
+        <div class="kpi-card card-accent-indigo">
+            <div class="kpi-label">
+                <span>Platform Gross Margin</span>
+                <span class="delta-badge {% if kpi.deltas.platform_income.direction == 'up' %}delta-up{% elif kpi.deltas.platform_income.direction == 'down' %}delta-down{% else %}delta-neutral{% endif %}">
+                    {{ kpi.deltas.platform_income.formatted }}
+                </span>
+            </div>
+            <div class="kpi-value">₹{{ kpi.platform_income }}</div>
+            <div class="kpi-subtext">Realized Sales – Technician Payouts</div>
+        </div>
+
+        <!-- 4. Bookings & Completion Rate -->
+        <div class="kpi-card card-accent-amber">
+            <div class="kpi-label">
+                <span>Completed Bookings</span>
+                <span class="delta-badge delta-neutral">{{ kpi.completion_rate }}% Rate</span>
+            </div>
+            <div class="kpi-value">{{ kpi.completed_bookings }} <span style="font-size: 16px; color: #94a3b8; font-weight: 500;">/ {{ kpi.total_bookings }}</span></div>
+            <div class="kpi-subtext">{{ kpi.active_bookings }} currently active/in-progress</div>
+        </div>
+
+        <!-- 5. Active Technicians -->
+        <div class="kpi-card card-accent-purple">
+            <div class="kpi-label">
+                <span>Active Technicians</span>
+                <span class="delta-badge delta-neutral">{{ kpi.active_technicians }}/{{ kpi.total_technicians }} Ready</span>
+            </div>
+            <div class="kpi-value">{{ kpi.active_technicians }}</div>
+            <div class="kpi-subtext">{{ kpi.total_technicians }} registered service partners</div>
+        </div>
+
+        <!-- 6. Total Customers -->
+        <div class="kpi-card card-accent-rose">
+            <div class="kpi-label">
+                <span>Customer Base</span>
+                <span class="delta-badge delta-up">+{{ kpi.new_customers }} New</span>
+            </div>
+            <div class="kpi-value">{{ kpi.total_customers }}</div>
+            <div class="kpi-subtext">{{ customer_analytics.repeat_rate }}% repeat booking rate</div>
+        </div>
+    </div>
+
+    <!-- Section Tabs -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('overview')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Executive Overview
+        </button>
+        <button class="tab-btn" onclick="switchTab('services')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            Services Performance
+        </button>
+        <button class="tab-btn" onclick="switchTab('technicians')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            Technician Scorecard
+        </button>
+        <button class="tab-btn" onclick="switchTab('customers')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Customers &amp; Bookings
+        </button>
+        <button class="tab-btn" onclick="switchTab('offers')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            Offers &amp; Referrals
+        </button>
+        <button class="tab-btn" onclick="switchTab('wallets')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Wallets &amp; Withdrawals
+        </button>
+        <button class="tab-btn" onclick="switchTab('quality')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Quality &amp; Disciplinary
+        </button>
+    </div>
+
+    <!-- TAB 1: EXECUTIVE OVERVIEW -->
+    <div id="tab-overview" class="tab-pane active">
+        <!-- Sales & Realized Trend Chart -->
+        <div class="content-box">
+            <div class="content-box-title">
+                <span>Gross Sales vs. Realized Sales Trend</span>
+                <span style="font-size: 12px; color: #64748b; font-weight: normal;">Daily Performance in Selected Window</span>
+            </div>
+            <div style="height: 300px; position: relative;">
+                <canvas id="salesTrendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Financial Statement Audit Ledger -->
+        <div class="content-box">
+            <div class="content-box-title">
+                <span>Financial Statement &amp; Operating Ledger</span>
+                <span class="badge badge-success">Audited Inflow / Outflow</span>
+            </div>
+            <div class="table-container" style="margin-bottom: 0;">
+                <table class="sb-table">
+                    <thead>
+                        <tr>
+                            <th>Accounting Category</th>
+                            <th>Line Item</th>
+                            <th>Amount (₹)</th>
+                            <th>Flow Type</th>
+                            <th>Financial Notes &amp; Verification Rule</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in financial_ledger.rows %}
+                        <tr>
+                            <td><strong>{{ row.category }}</strong></td>
+                            <td>{{ row.item }}</td>
+                            <td>
+                                {% if row.type == 'inflow' %}
+                                    <span class="ledger-inflow">+₹{{ row.amount }}</span>
+                                {% elif row.type == 'outflow' %}
+                                    <span class="ledger-outflow">-₹{{ row.amount }}</span>
+                                {% elif row.type == 'net_positive' %}
+                                    <span class="ledger-net">₹{{ row.amount }}</span>
+                                {% else %}
+                                    <span class="ledger-cash">₹{{ row.amount }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.type == 'inflow' %}
+                                    <span class="badge badge-success">Revenue Inflow</span>
+                                {% elif row.type == 'outflow' %}
+                                    <span class="badge badge-danger">Platform Expense</span>
+                                {% elif row.type == 'net_positive' %}
+                                    <span class="badge badge-info">Net Retained</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Disbursement</span>
+                                {% endif %}
+                            </td>
+                            <td style="color: #64748b; font-size: 12px;">{{ row.note }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: SERVICES PERFORMANCE -->
+    <div id="tab-services" class="tab-pane">
+        <div class="grid-2col">
+            <!-- Services Table -->
+            <div class="content-box">
+                <div class="content-box-title">
+                    <span>Service Catalog Analytics</span>
+                    <span style="font-size: 12px; color: #64748b;">Revenue &amp; Smoothed Quality Ratings</span>
+                </div>
+                <div class="table-container" style="margin-bottom: 0;">
+                    <table class="sb-table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Base Price</th>
+                                <th>Bookings</th>
+                                <th>Completed</th>
+                                <th>Gross Revenue</th>
+                                <th>Revenue Share</th>
+                                <th>Quality Rating</th>
+                                <th>Validated Complaints</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in service_analytics.services %}
+                            <tr>
+                                <td><strong>{{ s.name }}</strong></td>
+                                <td>₹{{ s.catalog_price }}</td>
+                                <td>{{ s.total_bookings }}</td>
+                                <td>
+                                    {{ s.completed_bookings }}
+                                    <span style="font-size: 11px; color: #64748b;">({{ s.completion_rate }}%)</span>
+                                </td>
+                                <td><strong>₹{{ s.revenue }}</strong></td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <div style="width: 50px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                                            <div style="width: {{ s.revenue_share }}%; height: 100%; background: #2563eb;"></div>
+                                        </div>
+                                        <span style="font-size: 11px; font-weight: 700;">{{ s.revenue_share }}%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if s.rating %}
+                                        <span class="badge badge-warning">★ {{ s.rating }}</span>
+                                    {% else %}
+                                        <span style="color: #94a3b8; font-size: 12px;">New (No ratings)</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if s.validated_complaints > 0 %}
+                                        <span class="badge badge-danger">{{ s.validated_complaints }}</span>
+                                    {% else %}
+                                        <span class="badge badge-success">0</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="8" class="empty-state">No service records found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Service Revenue Chart -->
+            <div class="content-box">
+                <div class="content-box-title">
+                    <span>Revenue by Service</span>
+                </div>
+                <div style="height: 320px; position: relative;">
+                    <canvas id="serviceRevenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: TECHNICIAN SCORECARD -->
+    <div id="tab-technicians" class="tab-pane">
+        <div class="content-box">
+            <div class="content-box-title">
+                <span>Technician Productivity &amp; Scorecard</span>
+                <span style="font-size: 12px; color: #64748b;">Ranked by completed jobs and earnings</span>
+            </div>
+            <div class="table-container" style="margin-bottom: 0;">
+                <table class="sb-table">
+                    <thead>
+                        <tr>
+                            <th>Technician</th>
+                            <th>Trade Category</th>
+                            <th>Availability</th>
+                            <th>Jobs Assigned</th>
+                            <th>Jobs Done</th>
+                            <th>Success Rate</th>
+                            <th>Job Earnings</th>
+                            <th>Bonuses</th>
+                            <th>Disbursed</th>
+                            <th>Wallet Balance</th>
+                            <th>Rating (★)</th>
+                            <th>Discipline</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in technicians %}
+                        <tr>
+                            <td>
+                                <strong>{{ t.username }}</strong>
+                            </td>
+                            <td><span class="badge badge-info">{{ t.category }}</span></td>
+                            <td>
+                                {% if t.is_available %}
+                                    <span class="badge badge-success">Available</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Busy / Offline</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ t.total_jobs }}</td>
+                            <td><strong>{{ t.completed_jobs }}</strong></td>
+                            <td>
+                                <span style="font-weight: 700; color: {% if t.completion_rate >= 80 %}#15803d{% else %}#b45309{% endif %};">
+                                    {{ t.completion_rate }}%
+                                </span>
+                            </td>
+                            <td><strong>₹{{ t.job_earnings }}</strong></td>
+                            <td>₹{{ t.incentive_earnings }}</td>
+                            <td>₹{{ t.withdrawn_amount }}</td>
+                            <td><strong style="color: #2563eb;">₹{{ t.wallet_balance }}</strong></td>
+                            <td>
+                                {% if t.average_rating %}
+                                    <span class="badge badge-warning">★ {{ t.average_rating }}</span>
+                                    <span style="font-size: 11px; color: #64748b;">({{ t.rating_count }})</span>
+                                {% else %}
+                                    <span style="color: #94a3b8; font-size: 11px;">Unrated</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if t.warning_count > 0 %}
+                                    <span class="badge badge-danger">{{ t.warning_count }} Warnings</span>
+                                {% else %}
+                                    <span class="badge badge-success">Clean Record</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="12" class="empty-state">No technician records found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: CUSTOMERS & BOOKINGS -->
+    <div id="tab-customers" class="tab-pane">
+        <div class="grid-2col">
+            <!-- Top Spenders -->
+            <div class="content-box">
+                <div class="content-box-title">
+                    <span>Top Spending Customers</span>
+                    <span style="font-size: 12px; color: #64748b;">Completed orders ranking</span>
+                </div>
+                <div class="table-container" style="margin-bottom: 0;">
+                    <table class="sb-table">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Contact</th>
+                                <th>Completed Bookings</th>
+                                <th>Total Spend</th>
+                                <th>Wallet Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in customer_analytics.top_spenders %}
+                            <tr>
+                                <td><strong>{{ c.username }}</strong><br><small style="color:#64748b;">{{ c.email }}</small></td>
+                                <td>{{ c.contact }}</td>
+                                <td><span class="badge badge-info">{{ c.bookings_count }} Bookings</span></td>
+                                <td><strong style="color: #15803d;">₹{{ c.total_spent }}</strong></td>
+                                <td>₹{{ c.wallet_balance }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="empty-state">No customer booking activity in this period.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Booking Status Breakdown Chart -->
+            <div class="content-box">
+                <div class="content-box-title">
+                    <span>Booking Status Distribution</span>
+                </div>
+                <div style="height: 280px; position: relative;">
+                    <canvas id="bookingStatusChart"></canvas>
+                </div>
+                <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-around; text-align: center;">
+                    <div>
+                        <div style="font-size: 11px; color: #64748b; text-transform: uppercase;">Repeat Rate</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #2563eb;">{{ customer_analytics.repeat_rate }}%</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: #64748b; text-transform: uppercase;">Active Bookers</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #0f172a;">{{ customer_analytics.total_customers_who_booked }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: OFFERS & REFERRALS -->
+    <div id="tab-offers" class="tab-pane">
+        <div class="grid-halves">
+            <!-- Promotional Offers Performance -->
+            <div class="content-box">
+                <div class="content-box-title">
+                    <span>Discount Coupon Performance</span>
+                    <span class="badge badge-info">{{ offers_referrals.active_offers }} Active Offers</span>
+                </div>
+                <div class="table-container" style="margin-bottom: 0;">
+                    <table class="sb-table">
+                        <thead>
+                            <tr>
+                                <th>Coupon</th>
+                                <th>Type</th>
+                                <th>Assigned</th>
+                                <th>Redeemed</th>
+                                <th>Conversion</th>
+                                <th>Revenue Driven</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for o in offers_referrals.offers_table %}
+                            <tr>
+                                <td><strong>{{ o.code }}</strong></td>
+                                <td><span class="badge badge-info">{{ o.discount_type }} ({{ o.discount_value }})</span></td>
+                                <td>{{ o.assigned }}</td>
+                                <td><strong>{{ o.redeemed }}</strong></td>
+                                <td>
+                                    <span style="font-weight: 700; color: {% if o.redemption_rate > 20 %}#15803d{% else %}#64748b{% endif %};">
+                                        {{ o.redemption_rate }}%
+                                    </span>
+                                </td>
+                                <td>₹{{ o.revenue }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="empty-state">No promo coupons configured yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Customer Referral Program -->
+            <div class="content-box">
+                <div class="content-box-title">
+                    <span>Referral Program &amp; Rewards</span>
+                    <span class="badge badge-success">₹{{ offers_referrals.referral_rewards_paid }} Distributed</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;">
+                    <div style="background: #f8fafc; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Total Referrals</div>
+                        <div style="font-size: 24px; font-weight: 800; color: #0f172a;">{{ offers_referrals.referral_count }}</div>
+                    </div>
+                    <div style="background: #f0fdf4; padding: 14px; border-radius: 10px; border: 1px solid #bbf7d0;">
+                        <div style="font-size: 11px; color: #166534; font-weight: 700; text-transform: uppercase;">Bonus Rewards Paid</div>
+                        <div style="font-size: 24px; font-weight: 800; color: #15803d;">₹{{ offers_referrals.referral_rewards_paid }}</div>
+                    </div>
+                </div>
+
+                <div class="table-container" style="margin-bottom: 0;">
+                    <table class="sb-table">
+                        <thead>
+                            <tr>
+                                <th>Referrer</th>
+                                <th>Invited Customer</th>
+                                <th>Reward Paid</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in offers_referrals.recent_referrals %}
+                            <tr>
+                                <td><strong>{{ r.referrer.username }}</strong></td>
+                                <td>{{ r.referee.username }}</td>
+                                <td><span class="ledger-inflow">+₹{{ r.reward_amount }}</span></td>
+                                <td><small style="color: #64748b;">{{ r.created_at|date:"d M Y" }}</small></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="empty-state">No referral logs recorded yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 6: WALLETS & WITHDRAWALS -->
+    <div id="tab-wallets" class="tab-pane">
+        <!-- Liabilities Header -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div class="kpi-card card-accent-indigo">
+                <div class="kpi-label">Technician Wallet Balance</div>
+                <div class="kpi-value">₹{{ wallet_analytics.technician_wallet_liability }}</div>
+                <div class="kpi-subtext">Current liability owed to technicians</div>
+            </div>
+            <div class="kpi-card card-accent-blue">
+                <div class="kpi-label">Customer Wallet Balance</div>
+                <div class="kpi-value">₹{{ wallet_analytics.customer_wallet_liability }}</div>
+                <div class="kpi-subtext">Unspent refund balances on customer accounts</div>
+            </div>
+            <div class="kpi-card card-accent-amber">
+                <div class="kpi-label">Pending Withdrawals Queue</div>
+                <div class="kpi-value">₹{{ wallet_analytics.withdrawals_pending }}</div>
+                <div class="kpi-subtext">{{ wallet_analytics.pending_requests_count }} technician withdrawal requests</div>
+            </div>
+            <div class="kpi-card card-accent-emerald">
+                <div class="kpi-label">Withdrawals Settled</div>
+                <div class="kpi-value">₹{{ wallet_analytics.withdrawals_completed }}</div>
+                <div class="kpi-subtext">Completed cash payouts to bank accounts</div>
+            </div>
+        </div>
+
+        <!-- Withdrawal Requests Queue -->
+        <div class="content-box">
+            <div class="content-box-title">
+                <span>Technician Withdrawal Requests Ledger</span>
+                <span class="badge badge-warning">{{ wallet_analytics.pending_requests_count }} Actionable</span>
+            </div>
+            <div class="table-container" style="margin-bottom: 0;">
+                <table class="sb-table">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Technician</th>
+                            <th>Payout Method</th>
+                            <th>Amount (₹)</th>
+                            <th>Requested Date</th>
+                            <th>Status</th>
+                            <th>Reference ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for w in wallet_analytics.withdrawal_requests %}
+                        <tr>
+                            <td>#WD-{{ w.id }}</td>
+                            <td><strong>{{ w.technician.username }}</strong></td>
+                            <td>{{ w.payout_method }}</td>
+                            <td><strong style="color: #0f172a;">₹{{ w.amount }}</strong></td>
+                            <td><small style="color: #64748b;">{{ w.created_at|date:"d M Y H:i" }}</small></td>
+                            <td>
+                                {% if w.status == 'COMPLETED' %}
+                                    <span class="badge badge-success">COMPLETED</span>
+                                {% elif w.status == 'PENDING' %}
+                                    <span class="badge badge-warning">PENDING</span>
+                                {% elif w.status == 'PROCESSING' %}
+                                    <span class="badge badge-info">PROCESSING</span>
+                                {% else %}
+                                    <span class="badge badge-danger">{{ w.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td><code>{{ w.reference_id|default:"Pending Reference" }}</code></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="empty-state">No withdrawal requests filed yet. (Empty state: ₹0.00)</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 7: QUALITY & DISCIPLINARY -->
+    <div id="tab-quality" class="tab-pane">
+        <div class="grid-2col">
+            <!-- Rating Distribution -->
+            <div class="content-box">
+                <div class="content-box-title">
+                    <span>Customer Star Ratings (1★ to 5★)</span>
+                    <span class="badge badge-warning">Avg ★ {{ quality_analytics.avg_stars }}</span>
+                </div>
+                
+                <div style="margin-top: 14px;">
+                    <div class="star-bar-row">
+                        <span style="width: 55px; font-weight: 700; color: #475569;">5 Stars</span>
+                        <div class="star-bar-container">
+                            <div class="star-bar-fill" style="width: {% if quality_analytics.total_ratings %}{% widthratio quality_analytics.star_distribution.5 quality_analytics.total_ratings 100 %}%{% else %}0%{% endif %}; background: #16a34a;"></div>
+                        </div>
+                        <span style="width: 35px; text-align: right; font-weight: 700;">{{ quality_analytics.star_distribution.5 }}</span>
+                    </div>
+
+                    <div class="star-bar-row">
+                        <span style="width: 55px; font-weight: 700; color: #475569;">4 Stars</span>
+                        <div class="star-bar-container">
+                            <div class="star-bar-fill" style="width: {% if quality_analytics.total_ratings %}{% widthratio quality_analytics.star_distribution.4 quality_analytics.total_ratings 100 %}%{% else %}0%{% endif %}; background: #65a30d;"></div>
+                        </div>
+                        <span style="width: 35px; text-align: right; font-weight: 700;">{{ quality_analytics.star_distribution.4 }}</span>
+                    </div>
+
+                    <div class="star-bar-row">
+                        <span style="width: 55px; font-weight: 700; color: #475569;">3 Stars</span>
+                        <div class="star-bar-container">
+                            <div class="star-bar-fill" style="width: {% if quality_analytics.total_ratings %}{% widthratio quality_analytics.star_distribution.3 quality_analytics.total_ratings 100 %}%{% else %}0%{% endif %}; background: #eab308;"></div>
+                        </div>
+                        <span style="width: 35px; text-align: right; font-weight: 700;">{{ quality_analytics.star_distribution.3 }}</span>
+                    </div>
+
+                    <div class="star-bar-row">
+                        <span style="width: 55px; font-weight: 700; color: #475569;">2 Stars</span>
+                        <div class="star-bar-container">
+                            <div class="star-bar-fill" style="width: {% if quality_analytics.total_ratings %}{% widthratio quality_analytics.star_distribution.2 quality_analytics.total_ratings 100 %}%{% else %}0%{% endif %}; background: #f97316;"></div>
+                        </div>
+                        <span style="width: 35px; text-align: right; font-weight: 700;">{{ quality_analytics.star_distribution.2 }}</span>
+                    </div>
+
+                    <div class="star-bar-row">
+                        <span style="width: 55px; font-weight: 700; color: #475569;">1 Star</span>
+                        <div class="star-bar-container">
+                            <div class="star-bar-fill" style="width: {% if quality_analytics.total_ratings %}{% widthratio quality_analytics.star_distribution.1 quality_analytics.total_ratings 100 %}%{% else %}0%{% endif %}; background: #ef4444;"></div>
+                        </div>
+                        <span style="width: 35px; text-align: right; font-weight: 700;">{{ quality_analytics.star_distribution.1 }}</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 12px;">
+                    Total Reviews Recorded: <strong>{{ quality_analytics.total_ratings }}</strong> verified customer reviews
+                </div>
+            </div>
+
+            <!-- Complaints & Disciplinary Metrics -->
+            <div class="content-box">
+                <div class="content-box-title">
+                    <span>Complaints &amp; Disciplinary Audit</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div style="background: #fff1f2; padding: 16px; border-radius: 12px; border: 1px solid #fecdd3;">
+                        <div style="font-size: 11px; font-weight: 700; color: #9f1239; text-transform: uppercase;">Customer Complaints</div>
+                        <div style="font-size: 26px; font-weight: 800; color: #e11d48; margin: 4px 0;">
+                            {{ quality_analytics.open_complaints }} Open
+                        </div>
+                        <div style="font-size: 12px; color: #881337;">{{ quality_analytics.resolved_complaints }} resolved</div>
+                    </div>
+
+                    <div style="background: #fffbeb; padding: 16px; border-radius: 12px; border: 1px solid #fde68a;">
+                        <div style="font-size: 11px; font-weight: 700; color: #92400e; text-transform: uppercase;">Technician Warnings</div>
+                        <div style="font-size: 26px; font-weight: 800; color: #d97706; margin: 4px 0;">
+                            {{ quality_analytics.total_warnings }}
+                        </div>
+                        <div style="font-size: 12px; color: #78350f;">-{{ quality_analytics.total_penalties }} penalty points</div>
+                    </div>
+
+                    <div style="background: #eff6ff; padding: 16px; border-radius: 12px; border: 1px solid #bfdbfe; grid-column: 1 / -1;">
+                        <div style="font-size: 11px; font-weight: 700; color: #1e40af; text-transform: uppercase;">Technician Internal Support Requests</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                            <span style="font-size: 20px; font-weight: 800; color: #2563eb;">{{ quality_analytics.open_tech_tickets }} Active Tickets</span>
+                            <span class="badge badge-info">{{ quality_analytics.resolved_tech_tickets }} Resolved</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Chart.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Tab switching logic with URL hash support
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+        const targetPane = document.getElementById('tab-' + tabId);
+        if (targetPane) {
+            targetPane.classList.add('active');
+        }
+
+        event?.target?.closest('.tab-btn')?.classList.add('active');
+        window.location.hash = tabId;
+    }
+
+    // Auto-select tab from hash on load
+    window.addEventListener('DOMContentLoaded', () => {
+        const hash = window.location.hash.replace('#', '');
+        if (hash && document.getElementById('tab-' + hash)) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + hash).classList.add('active');
+            const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(hash));
+            if (targetBtn) targetBtn.classList.add('active');
+        }
+    });
+
+    // 1. Sales Trend Chart
+    const trendCtx = document.getElementById('salesTrendChart')?.getContext('2d');
+    if (trendCtx) {
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: {{ chart_trends.labels|safe }},
+                datasets: [
+                    {
+                        label: 'Gross Sales (GMV) (₹)',
+                        data: {{ chart_trends.sales_series|safe }},
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#2563eb'
+                    },
+                    {
+                        label: 'Realized Sales (₹)',
+                        data: {{ chart_trends.realized_series|safe }},
+                        borderColor: '#10b981',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        tension: 0.35,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#10b981'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { boxWidth: 12, font: { weight: 600 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: { callback: v => '₹' + v }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Service Revenue Chart
+    const servCtx = document.getElementById('serviceRevenueChart')?.getContext('2d');
+    if (servCtx) {
+        new Chart(servCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ chart_categories|safe }},
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: {{ chart_cat_revenue|safe }},
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => 'Revenue: ₹' + ctx.parsed.y.toLocaleString()
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: v => '₹' + v }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 3. Booking Status Donut Chart
+    const statusCtx = document.getElementById('bookingStatusChart')?.getContext('2d');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Assigned', 'In Progress', 'Pending'],
+                datasets: [{
+                    data: [
+                        {{ customer_analytics.status_counts.Completed }},
+                        {{ customer_analytics.status_counts.Assigned }},
+                        {{ customer_analytics.status_counts.InProgress }},
+                        {{ customer_analytics.status_counts.Pending }}
+                    ],
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#94a3b8'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, font: { weight: 600 } } }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+</script>
+{% endblock %}
+
