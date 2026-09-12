@@ -89,6 +89,8 @@ def detect_metrics_in_text(text: str, entity_type: Optional[str] = None) -> List
     if re.search(r'\b(earn|earned|earnings|income|salary|wages|made|take\s*home)\b', lower):
         if entity_type == 'customer':
             metrics.append('customer_spending')
+        elif entity_type == 'platform':
+            metrics.append('platform_income')
         else:
             metrics.append('technician_earnings')
 
@@ -162,15 +164,23 @@ def parse_admin_query(
             raw_query=raw_query
         )
 
-    # 3. LIST / ENUMERATION QUERIES (Highest Priority before single-entity checks)
-    # e.g. "name all technicians", "list all technicians", "show all technicians", "who are the technicians?", "list customers", "give me all services"
+    # 3. PLATFORM OVERVIEW QUERY
+    # e.g. "Platform overview", "platform overview", "overview", "dashboard overview", "platform summary"
+    if re.search(r'\b(platform\s+overview|overview|dashboard\s+overview|platform\s+summary|general\s+overview)\b', lower_query):
+        return StructuredQuerySpec(
+            intent='platform_overview',
+            raw_query=raw_query
+        )
+
+    # 4. LIST / ENUMERATION QUERIES (Highest Priority before single-entity checks)
+    # e.g. "name all technician", "name all technicians", "list all technicians", "who are the technicians?", "list customers", "give me all services"
     list_patterns = [
         # Technicians
-        (r'\b(name\s+all\s+technicians|list\s+all\s+technicians|show\s+all\s+technicians|who\s+are\s+the\s+technicians|show\s+me\s+every\s+technician|give\s+me\s+the\s+technicians|list\s+technicians|all\s+technicians|show\s+technician\s+names|get\s+technicians|technicians\s+list)\b', 'technician'),
+        (r'\b(name\s+all\s+technicians?|list\s+all\s+technicians?|show\s+all\s+technicians?|who\s+are\s+the\s+technicians?|show\s+me\s+every\s+technician|give\s+me\s+the\s+technicians?|list\s+technicians?|all\s+technicians?|show\s+technician\s+names?|get\s+technicians?|technicians?\s+list)\b', 'technician'),
         # Customers
-        (r'\b(name\s+all\s+customers|list\s+all\s+customers|show\s+all\s+customers|who\s+are\s+the\s+customers|show\s+me\s+every\s+customer|give\s+me\s+the\s+customers|list\s+customers|all\s+customers|show\s+customer\s+names|get\s+customers|customers\s+list)\b', 'customer'),
+        (r'\b(name\s+all\s+customers?|list\s+all\s+customers?|show\s+all\s+customers?|who\s+are\s+the\s+customers?|show\s+me\s+every\s+customer|give\s+me\s+the\s+customers?|list\s+customers?|all\s+customers?|show\s+customer\s+names?|get\s+customers?|customers?\s+list)\b', 'customer'),
         # Services
-        (r'\b(name\s+all\s+services|list\s+all\s+services|show\s+all\s+services|what\s+services\s+do\s+we\s+have|what\s+services\s+do\s+we\s+offer|show\s+service\s+catalog|give\s+me\s+all\s+services|list\s+services|all\s+services|services\s+list|catalog)\b', 'service'),
+        (r'\b(name\s+all\s+services?|list\s+all\s+services?|show\s+all\s+services?|what\s+services?\s+do\s+we\s+have|what\s+services?\s+do\s+we\s+offer|show\s+service\s+catalog|give\s+me\s+all\s+services?|list\s+services?|all\s+services?|services?\s+list|catalog)\b', 'service'),
     ]
     for pattern, target in list_patterns:
         if re.search(pattern, lower_query):
@@ -331,7 +341,7 @@ def parse_admin_query(
             raw_query=raw_query
         )
 
-    if re.search(r'\b(completed\s+the\s+most\s+jobs|most\s+jobs\s+done|most\s+work|who\s+did\s+the\s+most\s+work|top\s+technician)\b', lower_query):
+    if re.search(r'\b(completed\s+the\s+most\s+jobs|most\s+jobs\s+done|most\s+work|who\s+did\s+the\s+most\s+work|top\s+technicians?\s+by\s+jobs|top\s+technicians?)\b', lower_query):
         return StructuredQuerySpec(
             intent='ranking',
             ranking_target='technician',

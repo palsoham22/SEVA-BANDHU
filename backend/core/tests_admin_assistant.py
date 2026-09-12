@@ -342,3 +342,111 @@ class AdminAssistantTestCase(TestCase):
         self.assertEqual(data['status'], 'ok')
         self.assertIn("₹600.00", data['answer'])
 
+    # ==========================================
+    # 8. LIST, COUNT, DETAILS & NAME VARIANT TESTS
+    # ==========================================
+    def test_list_queries(self):
+        """Verify listing queries for technicians, customers, and services."""
+        # List technicians
+        res_tech = process_admin_query("name all technicians")
+        self.assertEqual(res_tech['status'], 'ok')
+        self.assertEqual(res_tech['intent'], 'list')
+        self.assertIn("ramu_plumber", res_tech['answer'])
+        self.assertIn("vikram_ac", res_tech['answer'])
+
+        # List customers
+        res_cust = process_admin_query("list all customers")
+        self.assertEqual(res_cust['status'], 'ok')
+        self.assertEqual(res_cust['intent'], 'list')
+        self.assertIn("rahul_verma", res_cust['answer'])
+        self.assertIn("soham_sen", res_cust['answer'])
+
+        # List services
+        res_serv = process_admin_query("give me all services")
+        self.assertEqual(res_serv['status'], 'ok')
+        self.assertEqual(res_serv['intent'], 'list')
+        self.assertIn("AC Repair", res_serv['answer'])
+        self.assertIn("Plumbing", res_serv['answer'])
+
+    def test_count_queries(self):
+        """Verify count queries for technicians, customers, and services."""
+        res_count_tech = process_admin_query("how many technicians are there?")
+        self.assertEqual(res_count_tech['status'], 'ok')
+        self.assertEqual(res_count_tech['intent'], 'count')
+        self.assertIn("2 technicians", res_count_tech['answer'])
+
+        res_count_cust = process_admin_query("how many customers do we have?")
+        self.assertEqual(res_count_cust['status'], 'ok')
+        self.assertEqual(res_count_cust['intent'], 'count')
+        self.assertIn("2 customers", res_count_cust['answer'])
+
+        res_count_serv = process_admin_query("how many services are available?")
+        self.assertEqual(res_count_serv['status'], 'ok')
+        self.assertEqual(res_count_serv['intent'], 'count')
+        self.assertIn("2 services", res_count_serv['answer'])
+
+    def test_technician_services_and_details(self):
+        """Verify technician service lookup and full profile details."""
+        res_prov = process_admin_query("what service does ramu_plumber provide?")
+        self.assertEqual(res_prov['status'], 'ok')
+        self.assertEqual(res_prov['intent'], 'technician_services')
+        self.assertIn("Plumbing", res_prov['answer'])
+
+        res_details = process_admin_query("show ramu_plumber details")
+        self.assertEqual(res_details['status'], 'ok')
+        self.assertEqual(res_details['intent'], 'entity_details')
+        self.assertIn("ramu_plumber (Technician Profile)", res_details['answer'])
+        self.assertIn("9876543203", res_details['answer'])
+
+    def test_name_variant_and_time_modified_queries(self):
+        """Verify Indian surname variants (Paul -> Pal) and time-scoped earnings."""
+        u_s = User.objects.create_user(username='sayan_u', email='sayan@tech.com', password='pass')
+        Technician_signup.objects.create(
+            user=u_s,
+            username='SAYAN PAL',
+            email='sayan@tech.com',
+            contact='912380234',
+            service_category='AC Repair'
+        )
+
+        # Surname variant: "Sayan Paul" -> "SAYAN PAL"
+        res_phone = process_admin_query("Sayan Paul's contact number")
+        self.assertEqual(res_phone['status'], 'ok')
+        self.assertIn("912380234", res_phone['answer'])
+
+        # Time-modified annual income
+        res_annual = process_admin_query("Sayan Paul's annual income")
+        self.assertEqual(res_annual['status'], 'ok')
+        self.assertIn("This Year", res_annual['answer'])
+        self.assertIn("₹0.00", res_annual['answer'])
+
+        # What service does Sayan Paul provide?
+        res_serv = process_admin_query("what service does Sayan Paul provide?")
+        self.assertEqual(res_serv['status'], 'ok')
+        self.assertIn("AC Repair", res_serv['answer'])
+
+    def test_platform_overview_and_greeting(self):
+        """Verify Platform overview and greeting response match exact format."""
+        res_hi = process_admin_query("hi")
+        self.assertEqual(res_hi['status'], 'help')
+        self.assertIn("Ask about platform overview", res_hi['answer'])
+        self.assertIn("Source: Admin Analytics", res_hi['answer'])
+
+        res_ov = process_admin_query("Platform overview")
+        self.assertEqual(res_ov['status'], 'ok')
+        self.assertEqual(res_ov['intent'], 'platform_overview')
+        self.assertIn("Seva Bandhu platform overview:", res_ov['answer'])
+        self.assertIn("Technicians: 2", res_ov['answer'])
+        self.assertIn("Customers: 2", res_ov['answer'])
+        self.assertIn("Services: 2", res_ov['answer'])
+        self.assertIn("Paid sales: Rs", res_ov['answer'])
+        self.assertIn("Source: Admin Analytics", res_ov['answer'])
+
+        res_sing = process_admin_query("name all technician")
+        self.assertEqual(res_sing['status'], 'ok')
+        self.assertEqual(res_sing['intent'], 'list')
+        self.assertIn("Technicians:\n-", res_sing['answer'])
+        self.assertIn("Source: Admin Analytics", res_sing['answer'])
+
+
+

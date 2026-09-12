@@ -243,6 +243,7 @@ def resolve_entities(
     Dynamically searches Technicians, Customers, and Services in database.
     Returns: (list_of_resolved_entities, ambiguity_clarification_message_if_any)
     """
+    lower_query = query_text.lower()
     query_words = extract_query_words(query_text)
     services = find_services(query_text)
 

@@ -39,47 +39,96 @@ def format_value_by_metric(metric_key: str, val: Any) -> str:
     return str(val)
 
 
+def _format_currency_simple(val):
+    if val is None:
+        return "0"
+    try:
+        dec = Decimal(str(val))
+        if dec == dec.to_integral():
+            return f"{int(dec)}"
+        return f"{dec:,.2f}"
+    except Exception:
+        return str(val)
+
+
+def _format_platform_overview(result: dict) -> str:
+    paid_sales_str = _format_currency_simple(result['paid_sales'])
+    tech_earnings_str = _format_currency_simple(result['tech_earnings'])
+    platform_income_str = _format_currency_simple(result['platform_income'])
+
+    lines = [
+        "Seva Bandhu platform overview:",
+        f"Technicians: {result['tech_count']}",
+        f"Customers: {result['cust_count']}",
+        f"Services: {result['serv_count']}",
+        f"Bookings: {result['total_bookings']} ({result['completed_bookings']} completed)",
+        f"Paid sales: Rs {paid_sales_str}",
+        f"Technician earnings: Rs {tech_earnings_str}",
+        f"Platform income: Rs {platform_income_str}",
+        f"Offers: {result['offers_count']}",
+        f"Customer complaints: {result['cust_complaints']}",
+        f"Technician tickets: {result['tech_tickets']}",
+        f"Ratings: {result['ratings_count']} (average {result['avg_rating']:.1f} stars)",
+        f"Withdrawals: {result['withdrawals_count']}",
+        f"Referrals: {result['referrals_count']}",
+        f"Incentive awards: {result['incentives_count']}",
+        "Source: Admin Analytics"
+    ]
+    return "\n".join(lines)
+
+
 def format_query_response(result: dict) -> str:
     """
     Main formatting dispatcher.
     Returns human-readable answer string.
     """
     res_type = result.get('type')
+    text = ""
 
     if res_type in ['out_of_scope', 'help', 'clarification', 'error']:
-        return result.get('message', '')
+        text = result.get('message', '')
+
+    elif res_type == 'platform_overview':
+        text = _format_platform_overview(result)
 
     elif res_type == 'list':
-        return _format_list(result)
+        text = _format_list(result)
 
     elif res_type == 'count':
-        return _format_count(result)
+        text = _format_count(result)
 
     elif res_type == 'entity_details':
-        return _format_entity_details(result)
+        text = _format_entity_details(result)
 
     elif res_type == 'technician_services':
-        return _format_technician_services(result)
+        text = _format_technician_services(result)
 
     elif res_type == 'entity_metrics':
-        return _format_entity_metrics(result)
+        text = _format_entity_metrics(result)
 
     elif res_type == 'system_metrics':
-        return _format_system_metrics(result)
+        text = _format_system_metrics(result)
 
     elif res_type == 'cross_relational':
-        return _format_cross_relational(result)
+        text = _format_cross_relational(result)
 
     elif res_type == 'ranking':
-        return _format_ranking(result)
+        text = _format_ranking(result)
 
     elif res_type == 'compare_periods':
-        return _format_compare_periods(result)
+        text = _format_compare_periods(result)
 
     elif res_type == 'compare_entities':
-        return _format_compare_entities(result)
+        text = _format_compare_entities(result)
 
-    return "Query executed successfully."
+    else:
+        text = "Query executed successfully."
+
+    # Ensure source attribution is included
+    if "Source: Admin Analytics" not in text:
+        text = f"{text}\nSource: Admin Analytics"
+
+    return text
 
 
 def _format_list(result: dict) -> str:
@@ -91,25 +140,21 @@ def _format_list(result: dict) -> str:
         return f"There are currently no {target} found in the database."
 
     if target == 'technicians':
-        lines = [f"**Technicians ({total} registered)**:"]
-        for idx, t in enumerate(records, 1):
-            status = "Available" if t['is_available'] else "Offline"
-            rating_str = f"★ {t['rating']}" if t['rating'] != 'Unrated' else "Unrated"
-            lines.append(f"{idx}. **{t['name']}** — Specialty: *{t['specialty']}* | Phone: `{t['phone']}` | {status} ({rating_str})")
+        lines = ["Technicians:"]
+        for t in records:
+            lines.append(f"- {t['name']}")
         return "\n".join(lines)
 
     elif target == 'customers':
-        lines = [f"**Customers ({total} registered)**:"]
-        for idx, c in enumerate(records, 1):
-            lines.append(f"{idx}. **{c['name']}** — Phone: `{c['phone']}` | Email: `{c['email']}` (Joined: {c['joined']})")
+        lines = ["Customers:"]
+        for c in records:
+            lines.append(f"- {c['name']}")
         return "\n".join(lines)
 
     elif target == 'services':
-        lines = [f"**Service Catalog ({total} available)**:"]
-        for idx, s in enumerate(records, 1):
-            status = "Active" if s['is_enabled'] else "Disabled"
-            rating_str = f"★ {s['rating']}" if s['rating'] else "New"
-            lines.append(f"{idx}. **{s['name']}** — Price: {format_currency(s['price'])} | {status} ({rating_str})")
+        lines = ["Services:"]
+        for s in records:
+            lines.append(f"- {s['name']}")
         return "\n".join(lines)
 
     return f"Found {total} records."

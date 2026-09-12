@@ -24,6 +24,8 @@ from core.models import (
     TechnicianIncentive,
     WalletTransaction,
     ReferralLog,
+    Offer,
+    TechnicianSupportTicket,
 )
 from core.services.admin_income_analytics_service import (
     resolve_date_range,
@@ -53,18 +55,13 @@ def execute_query(spec: StructuredQuerySpec) -> dict:
         return {
             'type': 'help',
             'message': (
-                "Hello! I can answer questions about your Seva Bandhu platform data. Here are some examples of what you can ask:\n"
-                "• **List Data**: *\"name all technicians\"*, *\"list all customers\"*, *\"give me all services\"*\n"
-                "• **Counts**: *\"How many technicians are there?\"*, *\"How many bookings completed this month?\"*\n"
-                "• **Profiles & Services**: *\"show Sayan Paul's details\"*, *\"what service does Sayan Paul provide?\"*\n"
-                "• **Contacts**: *\"Sayan Paul's contact number\"*, *\"Rahul's email\"*\n"
-                "• **Sales & Income**: *\"Give me today's sales, bookings and new customers\"*, *\"Compare this month's sales with last month's\"*\n"
-                "• **Technicians**: *\"How much did Sayan Paul earn?\"*, *\"Sayan Paul's annual income\"*, *\"What is Sayan Paul's wallet balance?\"*\n"
-                "• **Customers**: *\"How much did Rahul spend?\"*, *\"Who spent the most?\"*\n"
-                "• **Services**: *\"Which service was booked the most?\"*, *\"Price of AC Repair\"*, *\"AC Repair rating\"*\n"
-                "• **Cross-Relational**: *\"Which customer booked Sayan Paul the most?\"*, *\"Which technician generated the most sales from AC Repair?\"*"
+                "Ask about platform overview, income, technicians, customers, services, "
+                "bookings, offers, ratings, withdrawals, referrals, or a named person's details."
             )
         }
+
+    elif intent == 'platform_overview':
+        return _execute_platform_overview(spec)
 
     elif intent == 'clarification':
         return {
@@ -105,6 +102,60 @@ def execute_query(spec: StructuredQuerySpec) -> dict:
     return {
         'type': 'error',
         'message': "Unable to execute query specification."
+    }
+
+
+def _execute_platform_overview(spec: StructuredQuerySpec) -> dict:
+    """Aggregates system-wide platform statistics for the platform overview."""
+    tech_count = Technician_signup.objects.count()
+    cust_count = customer_signup.objects.count()
+    serv_count = Service.objects.count()
+
+    total_bookings = ServiceRequest.objects.count()
+    completed_bookings = ServiceRequest.objects.filter(status='Completed').count()
+
+    paid_sales = ServiceRequest.objects.filter(status='Completed').aggregate(Sum('amount'))['amount__sum']
+    paid_sales_dec = _to_decimal(paid_sales)
+
+    tech_tx = TechnicianWalletTransaction.objects.filter(transaction_type='CREDIT', service_request__isnull=False)
+    job_earnings = _to_decimal(tech_tx.aggregate(Sum('amount'))['amount__sum'])
+
+    inc_tx = TechnicianIncentive.objects.filter(status__in=['EARNED', 'CREDITED'])
+    inc_earnings = _to_decimal(inc_tx.aggregate(Sum('amount'))['amount__sum'])
+
+    tech_earnings_dec = job_earnings + inc_earnings
+    platform_income_dec = max(Decimal('0.00'), paid_sales_dec - job_earnings)
+
+    offers_count = Offer.objects.count()
+    cust_complaints = SupportTicket.objects.count()
+    tech_tickets = TechnicianSupportTicket.objects.count()
+
+    ratings_count = TechnicianRating.objects.count()
+    avg_rating_val = TechnicianRating.objects.aggregate(Avg('rating'))['rating__avg']
+    avg_rating = round(float(avg_rating_val), 1) if avg_rating_val is not None else 0.0
+
+    withdrawals_count = TechnicianWithdrawal.objects.count()
+    referrals_count = ReferralLog.objects.count()
+    incentives_count = TechnicianIncentive.objects.count()
+
+    return {
+        'type': 'platform_overview',
+        'tech_count': tech_count,
+        'cust_count': cust_count,
+        'serv_count': serv_count,
+        'total_bookings': total_bookings,
+        'completed_bookings': completed_bookings,
+        'paid_sales': paid_sales_dec,
+        'tech_earnings': tech_earnings_dec,
+        'platform_income': platform_income_dec,
+        'offers_count': offers_count,
+        'cust_complaints': cust_complaints,
+        'tech_tickets': tech_tickets,
+        'ratings_count': ratings_count,
+        'avg_rating': avg_rating,
+        'withdrawals_count': withdrawals_count,
+        'referrals_count': referrals_count,
+        'incentives_count': incentives_count,
     }
 
 
