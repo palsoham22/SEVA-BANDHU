@@ -69,6 +69,7 @@ urlpatterns = [
     path('super-admin/', admin_views.admin_dashboard_view, name='admin_dashboard'),
     path('super-admin/income-analytics/', admin_views.admin_income_analytics, name='admin_income_analytics'),
     path('super-admin/analytics/', admin_views.admin_platform_analytics, name='admin_platform_analytics'),
+    path('super-admin/assistant/query/', admin_views.admin_assistant_query_api, name='admin_assistant_query'),
     
     path('super-admin/offers/', admin_views.admin_offers_list, name='admin_offers_list'),
     path('super-admin/offers/add/', admin_views.admin_offer_add, name='admin_offer_add'),

@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from functools import wraps
 
 from .models import (
@@ -483,6 +483,32 @@ def admin_income_analytics(request):
     from core.services.admin_income_analytics_service import get_full_income_analytics_context
     context = get_full_income_analytics_context(request)
     return render(request, 'admin_custom/income_analytics.html', context)
+
+
+# --- ADMIN DATA ASSISTANT API ---
+@superuser_required
+def admin_assistant_query_api(request):
+    """
+    Protected JSON API for the Floating Admin Data Assistant.
+    Accepts POST with JSON payload {"query": "...", "context": {...}}.
+    Returns JSON {"status": "...", "answer": "...", "intent": "...", "context": {...}, "data": {...}}.
+    """
+    import json
+    from core.services.admin_assistant import process_admin_query
+
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'answer': 'Method not allowed. Please use POST.'}, status=405)
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        data = request.POST
+
+    query_text = data.get('query', '').strip()
+    context = data.get('context', {})
+
+    response_data = process_admin_query(query_text, context)
+    return JsonResponse(response_data)
 
 
 # --- PLATFORM ANALYTICS ---

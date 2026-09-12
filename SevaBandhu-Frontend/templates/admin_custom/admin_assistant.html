@@ -1,0 +1,571 @@
+<!-- Seva Bandhu Admin Data Assistant Floating Widget -->
+<style>
+    /* Trigger Button */
+    .sb-assistant-trigger {
+        position: fixed;
+        bottom: 26px;
+        right: 26px;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35);
+        cursor: pointer;
+        z-index: 1050;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    .sb-assistant-trigger:hover {
+        transform: scale(1.08) translateY(-2px);
+        box-shadow: 0 12px 28px rgba(37, 99, 235, 0.45);
+    }
+    .sb-assistant-trigger svg {
+        width: 26px;
+        height: 26px;
+    }
+    .sb-assistant-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 12px;
+        height: 12px;
+        background: #10b981;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+    }
+
+    /* Floating Panel */
+    .sb-assistant-panel {
+        position: fixed;
+        bottom: 96px;
+        right: 26px;
+        width: 410px;
+        height: 560px;
+        max-width: calc(100vw - 32px);
+        max-height: calc(100vh - 120px);
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.06);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 1050;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(16px) scale(0.96);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .sb-assistant-panel.is-open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+    }
+
+    /* ENLARGED / MAXIMIZED STATE */
+    .sb-assistant-panel.is-expanded {
+        width: 820px;
+        height: 700px;
+        max-width: calc(100vw - 40px);
+        max-height: calc(100vh - 100px);
+    }
+
+    /* Header */
+    .sb-assistant-header {
+        background: #0f172a;
+        color: #ffffff;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #1e293b;
+        flex-shrink: 0;
+    }
+    .sb-assistant-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .sb-assistant-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 14px;
+        color: #fff;
+    }
+    .sb-assistant-title h3 {
+        font-size: 14px;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .sb-assistant-title p {
+        font-size: 11px;
+        color: #94a3b8;
+        margin: 0;
+    }
+    .sb-assistant-header-controls {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .sb-assistant-btn-icon {
+        background: #1e293b;
+        border: none;
+        color: #94a3b8;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+    }
+    .sb-assistant-btn-icon:hover {
+        background: #334155;
+        color: #ffffff;
+    }
+
+    /* Messages Area */
+    .sb-assistant-messages {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 18px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        background: #f8fafc;
+    }
+
+    .sb-message {
+        display: flex;
+        flex-direction: column;
+        max-width: 88%;
+        animation: sbFadeIn 0.2s ease;
+    }
+    @keyframes sbFadeIn {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .sb-message-user {
+        align-self: flex-end;
+    }
+    .sb-message-user .sb-bubble {
+        background: #2563eb;
+        color: #ffffff;
+        border-radius: 14px 14px 2px 14px;
+        padding: 10px 14px;
+        font-size: 13px;
+        line-height: 1.45;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+        word-wrap: break-word;
+    }
+    .sb-message-user .sb-time {
+        align-self: flex-end;
+        color: #94a3b8;
+        font-size: 10.5px;
+        margin-top: 4px;
+    }
+
+    .sb-message-assistant {
+        align-self: flex-start;
+    }
+    .sb-message-assistant .sb-bubble {
+        background: #ffffff;
+        color: #0f172a;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px 14px 14px 2px;
+        padding: 12px 16px;
+        font-size: 13px;
+        line-height: 1.5;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        word-wrap: break-word;
+    }
+    .sb-message-assistant .sb-bubble p {
+        margin-bottom: 8px;
+    }
+    .sb-message-assistant .sb-bubble p:last-child {
+        margin-bottom: 0;
+    }
+    .sb-message-assistant .sb-bubble strong {
+        color: #0f172a;
+    }
+    .sb-message-assistant .sb-time {
+        align-self: flex-start;
+        color: #94a3b8;
+        font-size: 10.5px;
+        margin-top: 4px;
+    }
+
+    /* Suggestion Chips Bar */
+    .sb-assistant-chips {
+        display: flex;
+        gap: 6px;
+        padding: 8px 14px;
+        background: #ffffff;
+        border-top: 1px solid #f1f5f9;
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none;
+    }
+    .sb-assistant-chips::-webkit-scrollbar {
+        display: none;
+    }
+    .sb-chip {
+        background: #f1f5f9;
+        color: #334155;
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+    }
+    .sb-chip:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+        border-color: #cbd5e1;
+    }
+
+    /* Input Footer */
+    .sb-assistant-footer {
+        padding: 12px 14px;
+        background: #ffffff;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    .sb-assistant-input {
+        flex-grow: 1;
+        padding: 10px 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        font-size: 13px;
+        outline: none;
+        background: #f8fafc;
+        color: #0f172a;
+        transition: all 0.15s ease;
+    }
+    .sb-assistant-input:focus {
+        border-color: #2563eb;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .sb-assistant-send {
+        background: #2563eb;
+        color: #ffffff;
+        border: none;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+    }
+    .sb-assistant-send:hover {
+        background: #1d4ed8;
+    }
+    .sb-assistant-send:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    /* Typing Indicator */
+    .sb-typing {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 4px;
+    }
+    .sb-typing-dot {
+        width: 6px;
+        height: 6px;
+        background: #94a3b8;
+        border-radius: 50%;
+        animation: sbBounce 1.2s infinite ease-in-out;
+    }
+    .sb-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .sb-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes sbBounce {
+        0%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-5px); background: #2563eb; }
+    }
+</style>
+
+<!-- Floating Button -->
+<div id="sbAssistantTrigger" class="sb-assistant-trigger" title="Open Admin Data Assistant">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        <circle cx="9" cy="10" r="1" fill="currentColor"></circle>
+        <circle cx="15" cy="10" r="1" fill="currentColor"></circle>
+        <path d="M9.5 14c.83.67 1.67 1 2.5 1s1.67-.33 2.5-1"></path>
+    </svg>
+    <div class="sb-assistant-badge"></div>
+</div>
+
+<!-- Chatbot Panel -->
+<div id="sbAssistantPanel" class="sb-assistant-panel">
+    <!-- Header -->
+    <div class="sb-assistant-header">
+        <div class="sb-assistant-header-left">
+            <div class="sb-assistant-avatar">SB</div>
+            <div class="sb-assistant-title">
+                <h3>Admin Data Assistant</h3>
+                <p>Natural Language Platform Intelligence</p>
+            </div>
+        </div>
+        <div class="sb-assistant-header-controls">
+            <!-- ENLARGE / RESTORE ARROW BUTTON (CORNER) -->
+            <button id="sbAssistantEnlargeBtn" class="sb-assistant-btn-icon" title="Enlarge Assistant Panel" aria-label="Enlarge or shrink assistant">
+                <!-- Enlarge Icon (default) -->
+                <svg id="sbIconEnlarge" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <polyline points="9 21 3 21 3 15"></polyline>
+                    <line x1="21" y1="3" x2="14" y2="10"></line>
+                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                </svg>
+                <!-- Restore Icon (hidden by default) -->
+                <svg id="sbIconRestore" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                    <polyline points="4 14 10 14 10 20"></polyline>
+                    <polyline points="20 10 14 10 14 4"></polyline>
+                    <line x1="14" y1="10" x2="21" y2="3"></line>
+                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                </svg>
+            </button>
+            <!-- Close Button -->
+            <button id="sbAssistantCloseBtn" class="sb-assistant-btn-icon" title="Minimize" aria-label="Close assistant">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Messages Container -->
+    <div id="sbAssistantMessages" class="sb-assistant-messages">
+        <!-- Initial Welcome Message -->
+        <div class="sb-message sb-message-assistant">
+            <div class="sb-bubble">
+                <p><strong>Hello Administrator!</strong></p>
+                <p>I am your deterministic <strong>Seva Bandhu Data Assistant</strong>. Ask me anything about platform sales, technician earnings, customer spending, bookings, or service ratings.</p>
+            </div>
+            <div class="sb-time">Just now</div>
+        </div>
+    </div>
+
+    <!-- Suggestion Chips -->
+    <div class="sb-assistant-chips">
+        <button class="sb-chip" onclick="sbSendSuggestion('Today\'s sales, bookings and new customers')">Today's Summary</button>
+        <button class="sb-chip" onclick="sbSendSuggestion('Which service was booked the most?')">Most Booked Service</button>
+        <button class="sb-chip" onclick="sbSendSuggestion('Who completed the most jobs?')">Top Technicians</button>
+        <button class="sb-chip" onclick="sbSendSuggestion('Compare this month\'s sales with last month\'s')">Monthly Comparison</button>
+    </div>
+
+    <!-- Input Footer -->
+    <div class="sb-assistant-footer">
+        <input 
+            type="text" 
+            id="sbAssistantInput" 
+            class="sb-assistant-input" 
+            placeholder="Ask about technicians, sales, ratings..." 
+            autocomplete="off"
+        >
+        <button id="sbAssistantSendBtn" class="sb-assistant-send" title="Send Question" aria-label="Send">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<!-- Assistant Client-Side Script -->
+<script>
+(function() {
+    const trigger = document.getElementById('sbAssistantTrigger');
+    const panel = document.getElementById('sbAssistantPanel');
+    const closeBtn = document.getElementById('sbAssistantCloseBtn');
+    const enlargeBtn = document.getElementById('sbAssistantEnlargeBtn');
+    const iconEnlarge = document.getElementById('sbIconEnlarge');
+    const iconRestore = document.getElementById('sbIconRestore');
+    const input = document.getElementById('sbAssistantInput');
+    const sendBtn = document.getElementById('sbAssistantSendBtn');
+    const messagesContainer = document.getElementById('sbAssistantMessages');
+
+    let conversationContext = {};
+    const queryUrl = "{% url 'admin_assistant_query' %}";
+
+    // Toggle Open / Close
+    trigger?.addEventListener('click', () => {
+        panel.classList.toggle('is-open');
+        if (panel.classList.contains('is-open')) {
+            setTimeout(() => input.focus(), 150);
+        }
+    });
+
+    closeBtn?.addEventListener('click', () => {
+        panel.classList.remove('is-open');
+    });
+
+    // ENLARGE / RESTORE ARROW TOGGLE
+    enlargeBtn?.addEventListener('click', () => {
+        const isExpanded = panel.classList.toggle('is-expanded');
+        if (isExpanded) {
+            iconEnlarge.style.display = 'none';
+            iconRestore.style.display = 'block';
+            enlargeBtn.setAttribute('title', 'Restore to standard size');
+        } else {
+            iconEnlarge.style.display = 'block';
+            iconRestore.style.display = 'none';
+            enlargeBtn.setAttribute('title', 'Enlarge Assistant Panel');
+        }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && panel.classList.contains('is-open')) {
+            panel.classList.remove('is-open');
+        }
+    });
+
+    // Send query
+    function sendQuery() {
+        const query = input.value.trim();
+        if (!query) return;
+
+        appendUserMessage(query);
+        input.value = '';
+        input.disabled = true;
+        sendBtn.disabled = true;
+
+        const typingIndicator = showTypingIndicator();
+
+        // Get CSRF token
+        const csrfCookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+        const csrfToken = csrfCookie ? csrfCookie.split('=')[1] : '';
+
+        fetch(queryUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                query: query,
+                context: conversationContext
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            typingIndicator.remove();
+            if (data.context) {
+                conversationContext = data.context;
+            }
+            appendAssistantMessage(data.answer || "Query executed.");
+        })
+        .catch(err => {
+            typingIndicator.remove();
+            appendAssistantMessage("Sorry, an error occurred while connecting to the assistant.");
+        })
+        .finally(() => {
+            input.disabled = false;
+            sendBtn.disabled = false;
+            input.focus();
+        });
+    }
+
+    sendBtn?.addEventListener('click', sendQuery);
+    input?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendQuery();
+        }
+    });
+
+    // Helper: Formatter for simple markdown formatting (bold, code, bullet list)
+    function formatMarkdown(text) {
+        let escaped = text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        // Bold **text**
+        escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // Inline code `code`
+        escaped = escaped.replace(/`(.*?)`/g, '<code>$1</code>');
+        // Bullets
+        escaped = escaped.replace(/^[•*]\s*(.*?)$/gm, '<div style="display:flex; gap:6px; margin-bottom:4px;"><span style="color:#2563eb;">•</span><span>$1</span></div>');
+        // New lines to paragraphs/breaks
+        return escaped.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+    }
+
+    function appendUserMessage(text) {
+        const msg = document.createElement('div');
+        msg.className = 'sb-message sb-message-user';
+        msg.innerHTML = `
+            <div class="sb-bubble">${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            <div class="sb-time">Just now</div>
+        `;
+        messagesContainer.appendChild(msg);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function appendAssistantMessage(text) {
+        const msg = document.createElement('div');
+        msg.className = 'sb-message sb-message-assistant';
+        msg.innerHTML = `
+            <div class="sb-bubble">${formatMarkdown(text)}</div>
+            <div class="sb-time">Just now</div>
+        `;
+        messagesContainer.appendChild(msg);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+        const ind = document.createElement('div');
+        ind.className = 'sb-message sb-message-assistant';
+        ind.innerHTML = `
+            <div class="sb-bubble">
+                <div class="sb-typing">
+                    <div class="sb-typing-dot"></div>
+                    <div class="sb-typing-dot"></div>
+                    <div class="sb-typing-dot"></div>
+                </div>
+            </div>
+        `;
+        messagesContainer.appendChild(ind);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        return ind;
+    }
+
+    window.sbSendSuggestion = function(text) {
+        if (!panel.classList.contains('is-open')) {
+            panel.classList.add('is-open');
+        }
+        input.value = text;
+        sendQuery();
+    };
+})();
+</script>
+
